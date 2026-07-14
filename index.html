@@ -93,9 +93,10 @@
                             カレンダー登録についてのご案内
                         </h3>
                         <ul class="text-xs text-blue-800 space-y-2 list-disc list-inside">
-                            <li>各法要の意味（解説）や戒名・自由メモは、カレンダーの<strong>「メモ（説明）」欄に自動で記載</strong>されます。</li>
-                            <li>カレンダーアプリの仕様上、<strong>一度登録した予定を後から一括で削除することはできません</strong>。</li>
-                            <li>間違えて登録するのを防ぐため、お使いのカレンダーアプリ内で事前に<strong>「法要用」の新しいカレンダー（カテゴリ）を作成し、そこへ登録することをおすすめ</strong>します。</li>
+                            <li>各法要の意味や戒名・自由メモは、カレンダーの<strong>「メモ（説明）」欄に自動で記載</strong>されます。</li>
+                            <li><strong>iPhoneの場合：</strong>ボタンを押すと予定一覧が開くので、右上の「すべて追加」を押してください。</li>
+                            <li><strong>Android/PCの場合：</strong>ファイルがダウンロードされます。ダウンロードしたファイルを開くとカレンダーに追加されます。</li>
+                            <li><strong>【重要】</strong>LINEなどのアプリ内ブラウザでは登録できません。右上のメニュー等から<strong>「Safariで開く」「ブラウザで開く」</strong>を選んでからお試しください。</li>
                         </ul>
                     </div>
 
@@ -318,36 +319,23 @@
             return `${y}${m}${d}T${h}${min}${s}Z`;
         }
 
-        async function downloadICS() {
+        function downloadICS() {
             if (events.length === 0) return;
+
+            // アプリ内ブラウザ（LINE等）かどうかの判定
+            const ua = navigator.userAgent.toLowerCase();
+            const isInAppBrowser = /line|micromessenger|instagram|facebook|fbav|twitter|threads/i.test(ua);
+            
+            if (isInAppBrowser) {
+                alert('【重要】\nLINEなどのアプリ内ブラウザでは、カレンダー登録がブロックされてしまいます。\n\n画面の右上（または右下）のメニューボタン（︙や↑）を押し、「Safariで開く」または「ブラウザで開く」を選択して、標準ブラウザに切り替えてから再度ボタンを押してください。');
+                return; // ここで処理を止める
+            }
 
             const icsData = generateICS();
             const deceasedName = document.getElementById('deceasedName').value.trim();
             const prefix = deceasedName ? `${deceasedName}_` : '';
             const filename = `${prefix}法要日程.ics`;
 
-            // 1. スマホ(iOS/Android)で最も確実な Web Share API を優先的に使用する
-            if (navigator.share) {
-                const file = new File([icsData], filename, { type: 'text/calendar' });
-                // ブラウザがファイル共有に対応しているか確認
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try {
-                        await navigator.share({
-                            files: [file],
-                            title: '法要日程',
-                            text: '計算された法要カレンダーです。カレンダーアプリに追加してください。'
-                        });
-                        return; // 共有成功、またはユーザーが操作完了したら処理終了
-                    } catch (error) {
-                        console.log('共有がキャンセルされたか失敗しました:', error);
-                        // AbortError(ユーザーが閉じた場合)はそのまま終了
-                        if (error.name === 'AbortError') return;
-                        // それ以外のエラーの場合はフォールバック(通常のダウンロード)へ進む
-                    }
-                }
-            }
-
-            // 2. Web Share APIが使えない環境（PCなど）や失敗した場合のフォールバック
             const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
             
             // IE/Edge などの古いブラウザ対応
@@ -356,17 +344,24 @@
                 return;
             }
 
-            // 通常のダウンロード処理
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = filename;
-            link.target = '_blank'; // iOSの古いSafariでダウンロードを促すための対策
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            setTimeout(() => URL.revokeObjectURL(link.href), 100);
+            // iOS判定 (iPhone/iPad)
+            const isIOS = /iphone|ipad|ipod/.test(ua);
+
+            if (isIOS) {
+                // iOS (Safari) の場合は、Blob URL に直接遷移させることで
+                // OS標準のカレンダーインポート画面（すべて追加）を起動しやすくする
+                const url = URL.createObjectURL(blob);
+                window.location.href = url;
+            } else {
+                // AndroidやPCの場合は、従来のaタグによるダウンロード
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(() => URL.revokeObjectURL(link.href), 100);
+            }
         }
     </script>
 </body>
