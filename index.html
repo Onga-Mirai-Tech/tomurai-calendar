@@ -54,7 +54,7 @@
         <div class="bg-purple-800 text-white p-6 print:hidden">
             <h1 class="text-2xl font-bold text-center flex items-center justify-center gap-2">
                 弔いカレンダー
-                <span class="text-xs font-mono font-normal bg-purple-900/50 px-2 py-0.5 rounded-full text-purple-200">v1.3.1</span>
+                <span class="text-xs font-mono font-normal bg-purple-900/50 px-2 py-0.5 rounded-full text-purple-200">v1.3.2</span>
             </h1>
             <p class="text-center text-sm mt-2 text-purple-200 leading-relaxed">
                 没年月日を入力するだけで、初七日から五十回忌までの法要日程を自動計算し、スマホのカレンダーに登録できます。
@@ -385,12 +385,15 @@
             
             const ua = navigator.userAgent.toLowerCase();
             const isIOS = /iphone|ipad|ipod/.test(ua);
+            const isCriOS = /crios/.test(ua); // iPhoneのChromeブラウザ判定
             
-            if (isIOS) {
+            if (isIOS && !isCriOS) {
+                // iPhoneのSafariの場合: シームレスな連携を優先
                 const base64Data = btoa(unescape(encodeURIComponent(icsData)));
                 const uri = "data:text/calendar;charset=utf-8;base64," + base64Data;
                 window.location.href = uri;
             } else {
+                // Android, PC, および iPhoneのChromeの場合
                 if (window.navigator && window.navigator.msSaveOrOpenBlob) {
                     window.navigator.msSaveOrOpenBlob(blob, filename);
                     return;
@@ -398,6 +401,7 @@
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
                 link.download = filename;
+                link.target = '_blank'; // iPhone Chromeで新規タブとして開かせてダウンロードを促す
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -553,12 +557,15 @@
             const filename = `${prefix}法要日程_全件.ics`;
 
             const isIOS = /iphone|ipad|ipod/.test(ua);
+            const isCriOS = /crios/.test(ua); // iPhoneのChromeブラウザ判定
 
-            if (isIOS) {
+            if (isIOS && !isCriOS) {
+                // iPhone Safari用
                 const base64Data = btoa(unescape(encodeURIComponent(icsData)));
                 const uri = "data:text/calendar;charset=utf-8;base64," + base64Data;
                 window.location.href = uri;
             } else {
+                // その他（PC, Android, iPhone Chrome等）
                 const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
                 if (window.navigator && window.navigator.msSaveOrOpenBlob) {
                     window.navigator.msSaveOrOpenBlob(blob, filename);
@@ -567,6 +574,7 @@
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
                 link.download = filename;
+                link.target = '_blank'; // iPhone Chrome対応
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
