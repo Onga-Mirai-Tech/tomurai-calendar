@@ -12,6 +12,11 @@
             font-family: 'Noto Sans JP', sans-serif;
             background-color: #f5f3f7; /* 淡い紫がかったグレー */
         }
+        /* iOS等のスマホブラウザではみ出す現象を防ぐための強制スタイル */
+        input[type="text"], input[type="date"], textarea {
+            box-sizing: border-box;
+            max-width: 100%;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8 flex flex-col items-center justify-center min-h-screen">
@@ -44,25 +49,25 @@
             <div class="space-y-5">
                 <div>
                     <label for="deceasedName" class="block text-sm font-medium text-gray-700 mb-1">故人のお名前 <span class="text-xs text-gray-500 font-normal">(任意)</span></label>
-                    <input type="text" id="deceasedName" placeholder="例: 山田太郎" class="block w-full min-w-0 max-w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 border outline-none transition" aria-describedby="name-description">
+                    <input type="text" id="deceasedName" placeholder="例: 山田太郎" class="block w-full box-border min-w-0 max-w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 border outline-none transition" aria-describedby="name-description">
                     <p id="name-description" class="mt-1 text-xs text-gray-500">入力するとカレンダーの予定名に使用されます。</p>
                 </div>
                 
                 <div>
                     <label for="kaimyo" class="block text-sm font-medium text-gray-700 mb-1">戒名・法名など <span class="text-xs text-gray-500 font-normal">(任意)</span></label>
-                    <input type="text" id="kaimyo" placeholder="例: 〇〇院釋〇〇" class="block w-full min-w-0 max-w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 border outline-none transition" aria-describedby="kaimyo-description">
+                    <input type="text" id="kaimyo" placeholder="例: 〇〇院釋〇〇" class="block w-full box-border min-w-0 max-w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 border outline-none transition" aria-describedby="kaimyo-description">
                     <p id="kaimyo-description" class="mt-1 text-xs text-gray-500">カレンダーのメモ欄に記録されます。</p>
                 </div>
 
                 <div>
                     <label for="customNote" class="block text-sm font-medium text-gray-700 mb-1">自由記述メモ <span class="text-xs text-gray-500 font-normal">(任意)</span></label>
-                    <textarea id="customNote" rows="3" placeholder="例: お寺の電話番号、参列者への連絡事項など" class="block w-full min-w-0 max-w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 border outline-none transition resize-y" aria-describedby="note-description"></textarea>
+                    <textarea id="customNote" rows="3" placeholder="例: お寺の電話番号、参列者への連絡事項など" class="block w-full box-border min-w-0 max-w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 border outline-none transition resize-y" aria-describedby="note-description"></textarea>
                     <p id="note-description" class="mt-1 text-xs text-gray-500">入力した内容は、すべての法要カレンダーのメモ欄に一括で追加されます。</p>
                 </div>
                 
                 <div>
                     <label for="deathDate" class="block text-sm font-medium text-gray-700 mb-1">没年月日 <span class="text-red-500">*</span></label>
-                    <input type="date" id="deathDate" class="block w-full min-w-0 max-w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 border outline-none transition" required>
+                    <input type="date" id="deathDate" class="block w-full box-border min-w-0 max-w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 border outline-none transition" required>
                 </div>
                 
                 <button onclick="calculateDates()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-200 shadow-md">
