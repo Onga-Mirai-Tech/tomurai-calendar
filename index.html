@@ -94,7 +94,7 @@
                         </h3>
                         <ul class="text-xs text-blue-800 space-y-2 list-disc list-inside">
                             <li>各法要の意味や戒名・自由メモは、カレンダーの<strong>「メモ（説明）」欄に自動で記載</strong>されます。</li>
-                            <li><strong>iPhoneの場合：</strong>ボタンを押すと予定一覧が開くので、右上の「すべて追加」を押してください。</li>
+                            <li><strong>iPhoneの場合：</strong>ボタンを押すとカレンダーの追加画面が起動しますので、右上の「すべて追加」を押してください。</li>
                             <li><strong>Android/PCの場合：</strong>ファイルがダウンロードされます。ダウンロードしたファイルを開くとカレンダーに追加されます。</li>
                             <li><strong>【重要】</strong>LINEなどのアプリ内ブラウザでは登録できません。右上のメニュー等から<strong>「Safariで開く」「ブラウザで開く」</strong>を選んでからお試しください。</li>
                         </ul>
@@ -255,7 +255,14 @@
          * iCalendar (ICS) 文字列を生成する
          */
         function generateICS() {
-            let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//TomuraiCalendarApp//JA\nCALSCALE:GREGORIAN\n";
+            // iCalendarの仕様(RFC 5545)に厳密に従い、改行コードを必ずCRLF(\r\n)にする
+            // ※iOSのカレンダーアプリはCRLFでないとパースに失敗し、単なるテキストとして表示してしまいます。
+            const CRLF = "\r\n";
+            let icsContent = "BEGIN:VCALENDAR" + CRLF;
+            icsContent += "VERSION:2.0" + CRLF;
+            icsContent += "PRODID:-//TomuraiCalendarApp//JA" + CRLF;
+            icsContent += "CALSCALE:GREGORIAN" + CRLF;
+            icsContent += "METHOD:PUBLISH" + CRLF; // カレンダーアプリでの認識率を上げるための指定
             
             const now = new Date();
             const dtStamp = formatDateTimeForICS(now);
@@ -271,14 +278,15 @@
                 endDate.setDate(endDate.getDate() + 1);
                 const dtEnd = formatDateForICS(endDate);
                 
-                icsContent += "BEGIN:VEVENT\n";
-                icsContent += `UID:tomurai-${dtStart}-${index}@tomuraiapp\n`;
-                icsContent += `DTSTAMP:${dtStamp}\n`;
-                icsContent += `DTSTART;VALUE=DATE:${dtStart}\n`;
-                icsContent += `DTEND;VALUE=DATE:${dtEnd}\n`;
-                icsContent += `SUMMARY:${event.title}\n`;
+                icsContent += "BEGIN:VEVENT" + CRLF;
+                icsContent += `UID:tomurai-${dtStart}-${index}@tomuraiapp` + CRLF;
+                icsContent += `DTSTAMP:${dtStamp}` + CRLF;
+                icsContent += `DTSTART;VALUE=DATE:${dtStart}` + CRLF;
+                icsContent += `DTEND;VALUE=DATE:${dtEnd}` + CRLF;
+                icsContent += `SUMMARY:${event.title}` + CRLF;
                 
                 // --- 説明(メモ)欄の作成 ---
+                // ICS形式におけるテキスト内の改行表現は "\n" または "\N" (文字としてのバックスラッシュ+n)
                 let desc = `【${event.name}】\\n${event.note}\\n`;
                 
                 if (kaimyo) {
@@ -286,19 +294,18 @@
                 }
                 
                 if (customNote) {
-                    // ICS形式では改行を \n という文字列にエスケープする必要があるため置換
                     const escapedNote = customNote.replace(/\n/g, '\\n');
                     desc += `\\n-- メモ --\\n${escapedNote}\\n`;
                 }
                 
-                icsContent += `DESCRIPTION:${desc}\n`;
+                icsContent += `DESCRIPTION:${desc}` + CRLF;
                 // -------------------------
                 
-                icsContent += "TRANSP:TRANSPARENT\n";
-                icsContent += "END:VEVENT\n";
+                icsContent += "TRANSP:TRANSPARENT" + CRLF;
+                icsContent += "END:VEVENT" + CRLF;
             });
 
-            icsContent += "END:VCALENDAR";
+            icsContent += "END:VCALENDAR" + CRLF;
             return icsContent;
         }
 
@@ -336,24 +343,24 @@
             const prefix = deceasedName ? `${deceasedName}_` : '';
             const filename = `${prefix}法要日程.ics`;
 
-            const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
-            
-            // IE/Edge などの古いブラウザ対応
-            if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-                window.navigator.msSaveOrOpenBlob(blob, filename);
-                return;
-            }
-
             // iOS判定 (iPhone/iPad)
             const isIOS = /iphone|ipad|ipod/.test(ua);
 
             if (isIOS) {
-                // iOS (Safari) の場合は、Blob URL に直接遷移させることで
-                // OS標準のカレンダーインポート画面（すべて追加）を起動しやすくする
-                const url = URL.createObjectURL(blob);
-                window.location.href = url;
+                // iOS (Safari) の場合は、シームレス連携の成功率が最も高い
+                // 「Base64エンコードしたData URI」への直接遷移(location.href)を使用します。
+                // CRLF化＋Base64化により、iOSが単なるテキストではなく「カレンダーファイル」として認識してくれます。
+                const base64Data = btoa(unescape(encodeURIComponent(icsData)));
+                const uri = "data:text/calendar;charset=utf-8;base64," + base64Data;
+                window.location.href = uri;
             } else {
                 // AndroidやPCの場合は、従来のaタグによるダウンロード
+                const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
+                // IE/Edge などの古いブラウザ対応
+                if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+                    window.navigator.msSaveOrOpenBlob(blob, filename);
+                    return;
+                }
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
                 link.download = filename;
