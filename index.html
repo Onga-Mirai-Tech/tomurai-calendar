@@ -54,7 +54,7 @@
         <div class="bg-purple-800 text-white p-6 print:hidden">
             <h1 class="text-2xl font-bold text-center flex items-center justify-center gap-2">
                 弔いカレンダー
-                <span class="text-xs font-mono font-normal bg-purple-900/50 px-2 py-0.5 rounded-full text-purple-200">v1.4.0</span>
+                <span class="text-xs font-mono font-normal bg-purple-900/50 px-2 py-0.5 rounded-full text-purple-200">v1.4.2</span>
             </h1>
             <p class="text-center text-sm mt-2 text-purple-200 leading-relaxed">
                 没年月日を入力するだけで、初七日から五十回忌までの法要日程を自動計算し、GoogleカレンダーやAppleカレンダーに登録できます。
@@ -126,18 +126,38 @@
                     </h2>
                     
                     <!-- ご案内 (印刷時は非表示) -->
-                    <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-4 print:hidden">
-                        <h3 class="text-sm font-bold text-blue-800 mb-2 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-5 mb-5 shadow-sm print:hidden">
+                        <h3 class="text-sm font-bold text-blue-900 mb-3 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                             </svg>
-                            カレンダー登録についてのご案内
+                            カレンダーへの登録手順
                         </h3>
-                        <ul class="text-xs text-blue-800 space-y-2 list-disc list-inside">
-                            <li><strong>確実な登録方法：</strong> リストに表示されるボタンを押すと、1件ずつ確実に予定を登録できます。</li>
-                            <li><strong>自動最適化：</strong> お使いのブラウザに合わせて、最適なカレンダー（Google または Apple）への登録ボタンが自動で表示されます。</li>
-                            <li><strong>【重要】</strong>LINEなどのアプリ内で開いている場合は機能が制限されます。右上のメニュー等から<strong>「Safariで開く」「ブラウザで開く」</strong>を選んでからお試しください。</li>
-                        </ul>
+
+                        <!-- Apple Safari用の詳しい手順 -->
+                        <div id="guide-apple" class="hidden bg-white p-3.5 rounded-md border border-blue-100">
+                            <ol class="text-xs text-blue-900 space-y-3 ml-4 list-decimal font-medium">
+                                <li>下のリストの<strong>「Appleカレンダーに追加」</strong>ボタンを押す</li>
+                                <li>「ダウンロードしますか？」と聞かれたら<strong>「ダウンロード」</strong>を押す</li>
+                                <li>画面の下（または上）のアドレスバーにある <strong>「↓（下矢印）」マーク</strong> を押す<br><span class="text-[10px] text-gray-500 font-normal mt-0.5 block">※見当たらない場合は、URLの横の「ぁあ」の部分を押すと「ダウンロード」メニューが出ます</span></li>
+                                <li><strong>「ダウンロード」</strong>を選択し、保存されたファイルを押す</li>
+                                <li>予定画面が開くので、右上の<strong>「すべて追加」</strong>を押して完了！</li>
+                            </ol>
+                        </div>
+
+                        <!-- Google用の手順 -->
+                        <div id="guide-google" class="hidden bg-white p-3.5 rounded-md border border-blue-100">
+                            <p class="text-xs text-blue-900 leading-relaxed font-medium">
+                                リストの<strong>「Googleカレンダーに追加」</strong>ボタンを押すと、登録画面が開きます。内容を確認してそのまま保存してください。
+                            </p>
+                        </div>
+
+                        <div class="mt-3 pt-3 border-t border-blue-200">
+                            <p class="text-[11px] text-red-600 font-bold flex items-start">
+                                <span class="mr-1">※</span>
+                                <span>LINE等のアプリ内で開いている場合は機能が制限されます。右上のメニュー（↑や︙など）から「Safariで開く」または「ブラウザで開く」を選び直してください。</span>
+                            </p>
+                        </div>
                     </div>
 
                     <!-- リスト出力 -->
@@ -370,7 +390,7 @@
         }
 
         /**
-         * 1件だけICSファイルをダウンロード/連携させる関数
+         * 1件だけICSファイルを確実な方法でダウンロードさせる関数
          */
         function downloadSingleICS(index) {
             const event = events[index];
@@ -380,30 +400,20 @@
             const filename = `${event.title}.ics`;
             const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
             
-            const ua = navigator.userAgent.toLowerCase();
-            const isIOS = /iphone|ipad|ipod/.test(ua);
-            const isCriOS = /crios/.test(ua); // iPhoneのChromeブラウザ判定
-            
-            if (isIOS && !isCriOS) {
-                // iPhoneのSafariの場合: シームレスな連携を優先
-                const base64Data = btoa(unescape(encodeURIComponent(icsData)));
-                const uri = "data:text/calendar;charset=utf-8;base64," + base64Data;
-                window.location.href = uri;
-            } else {
-                // Mac Safari 等のフォールバック用
-                if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-                    window.navigator.msSaveOrOpenBlob(blob, filename);
-                    return;
-                }
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = filename;
-                link.target = '_blank';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                setTimeout(() => URL.revokeObjectURL(link.href), 100);
+            if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+                window.navigator.msSaveOrOpenBlob(blob, filename);
+                return;
             }
+            
+            // 全てのブラウザで最も確実な標準ダウンロード方式を使用
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(link.href), 100);
         }
 
         /**
@@ -424,12 +434,23 @@
             // Apple端末の純正Safariであるかのフラグ
             const isAppleSafari = (isIOS || isMac) && isSafari;
 
+            // ガイドの表示切替
+            const guideApple = document.getElementById('guide-apple');
+            const guideGoogle = document.getElementById('guide-google');
+            if (guideApple && guideGoogle) {
+                if (isAppleSafari) {
+                    guideApple.classList.remove('hidden');
+                    guideGoogle.classList.add('hidden');
+                } else {
+                    guideApple.classList.add('hidden');
+                    guideGoogle.classList.remove('hidden');
+                }
+            }
+
             events.forEach((event, index) => {
                 const li = document.createElement('li');
-                // 印刷時に要素がページをまたいで分断されないように、かつ1ページに収めるために余白を詰める
                 li.className = 'p-4 hover:bg-purple-50 transition duration-150 flex flex-col print:py-1.5 print:px-2 print:break-inside-avoid';
                 
-                // 上部：日付と名称
                 const topDiv = document.createElement('div');
                 topDiv.className = 'flex flex-col sm:flex-row sm:items-start print:flex-row print:items-center';
                 
@@ -454,16 +475,13 @@
                 topDiv.appendChild(nameDiv);
                 topDiv.appendChild(contentDiv);
                 
-                // 下部：個別のアクションボタン (印刷時は非表示にする)
                 const actionDiv = document.createElement('div');
                 actionDiv.className = 'mt-3 sm:ml-auto flex flex-wrap gap-2 pt-2 border-t border-purple-100 sm:border-none sm:pt-0 print:hidden';
                 
-                // Googleカレンダー追加リンク (Chrome, Edge, Firefox, Android用)
                 const googleUrl = getGoogleCalendarUrl(event);
                 const googleBtn = document.createElement('a');
                 googleBtn.href = googleUrl;
                 googleBtn.target = '_blank';
-                // 幅をボタン内でセンタリングし、スマホで押しやすくする
                 googleBtn.className = 'inline-flex w-full sm:w-auto justify-center items-center px-3 py-2 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500';
                 googleBtn.innerHTML = `
                     <svg class="mr-1.5 h-4 w-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -472,7 +490,6 @@
                     Googleカレンダーに追加
                 `;
 
-                // Apple標準カレンダー追加ボタン (iPhone/Mac Safari用)
                 const appleBtn = document.createElement('button');
                 appleBtn.onclick = () => downloadSingleICS(index);
                 appleBtn.className = 'inline-flex w-full sm:w-auto justify-center items-center px-3 py-2 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500';
@@ -483,7 +500,6 @@
                     Appleカレンダーに追加
                 `;
 
-                // ブラウザに応じて表示するボタンを1つに絞る
                 if (isAppleSafari) {
                     actionDiv.appendChild(appleBtn);
                 } else {
@@ -567,30 +583,21 @@
             const prefix = deceasedName ? `${deceasedName}_` : '';
             const filename = `${prefix}法要日程_全件.ics`;
 
-            const isIOS = /iphone|ipad|ipod/.test(ua);
-            const isCriOS = /crios/.test(ua); // iPhoneのChromeブラウザ判定
-
-            if (isIOS && !isCriOS) {
-                // iPhone Safari用
-                const base64Data = btoa(unescape(encodeURIComponent(icsData)));
-                const uri = "data:text/calendar;charset=utf-8;base64," + base64Data;
-                window.location.href = uri;
-            } else {
-                // その他（PC, Android, iPhone Chrome等）
-                const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
-                if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-                    window.navigator.msSaveOrOpenBlob(blob, filename);
-                    return;
-                }
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = filename;
-                link.target = '_blank'; // iPhone Chrome対応
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                setTimeout(() => URL.revokeObjectURL(link.href), 100);
+            const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
+            if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+                window.navigator.msSaveOrOpenBlob(blob, filename);
+                return;
             }
+            
+            // 全てのブラウザで最も確実な標準ダウンロード方式を使用
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(link.href), 100);
         }
     </script>
 </body>
