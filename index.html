@@ -54,10 +54,10 @@
         <div class="bg-purple-800 text-white p-6 print:hidden">
             <h1 class="text-2xl font-bold text-center flex items-center justify-center gap-2">
                 弔いカレンダー
-                <span class="text-xs font-mono font-normal bg-purple-900/50 px-2 py-0.5 rounded-full text-purple-200">v1.3.2</span>
+                <span class="text-xs font-mono font-normal bg-purple-900/50 px-2 py-0.5 rounded-full text-purple-200">v1.4.0</span>
             </h1>
             <p class="text-center text-sm mt-2 text-purple-200 leading-relaxed">
-                没年月日を入力するだけで、初七日から五十回忌までの法要日程を自動計算し、スマホのカレンダーに登録できます。
+                没年月日を入力するだけで、初七日から五十回忌までの法要日程を自動計算し、GoogleカレンダーやAppleカレンダーに登録できます。
             </p>
         </div>
         
@@ -134,8 +134,8 @@
                             カレンダー登録についてのご案内
                         </h3>
                         <ul class="text-xs text-blue-800 space-y-2 list-disc list-inside">
-                            <li><strong>確実な登録方法：</strong> リストに表示される各法要の<strong>「Googleカレンダー」「標準カレンダー」</strong>ボタンを押すと、1件ずつ確実に登録できます。（※必要な法要だけを登録したい場合におすすめです）</li>
-                            <li><strong>一括登録について：</strong> スマホのセキュリティ強化により、一括登録ボタンがうまく機能しない（ブロックされる）場合があります。その際は各項目の個別ボタンをご利用ください。</li>
+                            <li><strong>確実な登録方法：</strong> リストに表示されるボタンを押すと、1件ずつ確実に予定を登録できます。</li>
+                            <li><strong>自動最適化：</strong> お使いのブラウザに合わせて、最適なカレンダー（Google または Apple）への登録ボタンが自動で表示されます。</li>
                             <li><strong>【重要】</strong>LINEなどのアプリ内で開いている場合は機能が制限されます。右上のメニュー等から<strong>「Safariで開く」「ブラウザで開く」</strong>を選んでからお試しください。</li>
                         </ul>
                     </div>
@@ -177,9 +177,6 @@
                             </svg>
                             (PC・対応端末用) 全件一括ダウンロード
                         </button>
-                        <p class="text-xs text-gray-500 mt-1 text-center leading-relaxed">
-                            ※スマホで一括登録がうまくいかない場合は、<br>リスト内の「個別登録ボタン」をご利用ください。
-                        </p>
                     </div>
                 </div>
             </div>
@@ -393,7 +390,7 @@
                 const uri = "data:text/calendar;charset=utf-8;base64," + base64Data;
                 window.location.href = uri;
             } else {
-                // Android, PC, および iPhoneのChromeの場合
+                // Mac Safari 等のフォールバック用
                 if (window.navigator && window.navigator.msSaveOrOpenBlob) {
                     window.navigator.msSaveOrOpenBlob(blob, filename);
                     return;
@@ -401,7 +398,7 @@
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
                 link.download = filename;
-                link.target = '_blank'; // iPhone Chromeで新規タブとして開かせてダウンロードを促す
+                link.target = '_blank';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -417,6 +414,15 @@
             ul.innerHTML = '';
 
             const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' };
+
+            // ブラウザ判定ロジック
+            const ua = navigator.userAgent.toLowerCase();
+            const isIOS = /iphone|ipad|ipod/.test(ua);
+            const isMac = /macintosh/.test(ua);
+            // Chrome, Edge, Firefox, Operaなどではない純粋なSafariかどうか
+            const isSafari = /safari/.test(ua) && !/chrome|crios|crmo|edg|opr|fxios/.test(ua);
+            // Apple端末の純正Safariであるかのフラグ
+            const isAppleSafari = (isIOS || isMac) && isSafari;
 
             events.forEach((event, index) => {
                 const li = document.createElement('li');
@@ -448,36 +454,41 @@
                 topDiv.appendChild(nameDiv);
                 topDiv.appendChild(contentDiv);
                 
-                // 下部：個別のアクションボタン (印刷時は非表示にする: print:hidden)
+                // 下部：個別のアクションボタン (印刷時は非表示にする)
                 const actionDiv = document.createElement('div');
                 actionDiv.className = 'mt-3 sm:ml-auto flex flex-wrap gap-2 pt-2 border-t border-purple-100 sm:border-none sm:pt-0 print:hidden';
                 
-                // Googleカレンダー追加リンク
+                // Googleカレンダー追加リンク (Chrome, Edge, Firefox, Android用)
                 const googleUrl = getGoogleCalendarUrl(event);
                 const googleBtn = document.createElement('a');
                 googleBtn.href = googleUrl;
                 googleBtn.target = '_blank';
-                googleBtn.className = 'inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500';
+                // 幅をボタン内でセンタリングし、スマホで押しやすくする
+                googleBtn.className = 'inline-flex w-full sm:w-auto justify-center items-center px-3 py-2 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500';
                 googleBtn.innerHTML = `
                     <svg class="mr-1.5 h-4 w-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 002 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/>
                     </svg>
-                    Google
+                    Googleカレンダーに追加
                 `;
 
-                // 標準カレンダー追加ボタン
+                // Apple標準カレンダー追加ボタン (iPhone/Mac Safari用)
                 const appleBtn = document.createElement('button');
                 appleBtn.onclick = () => downloadSingleICS(index);
-                appleBtn.className = 'inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500';
+                appleBtn.className = 'inline-flex w-full sm:w-auto justify-center items-center px-3 py-2 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500';
                 appleBtn.innerHTML = `
                     <svg class="mr-1.5 h-4 w-4 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                         <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
                     </svg>
-                    標準アプリ
+                    Appleカレンダーに追加
                 `;
 
-                actionDiv.appendChild(googleBtn);
-                actionDiv.appendChild(appleBtn);
+                // ブラウザに応じて表示するボタンを1つに絞る
+                if (isAppleSafari) {
+                    actionDiv.appendChild(appleBtn);
+                } else {
+                    actionDiv.appendChild(googleBtn);
+                }
 
                 li.appendChild(topDiv);
                 li.appendChild(actionDiv);
