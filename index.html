@@ -222,6 +222,9 @@
         // 計算結果を保持するグローバル配列
         let events = [];
 
+        // iOS用に発行したblob URL（再計算時に解放するため保持）
+        let issuedObjectUrls = [];
+
         /**
          * 端末・ブラウザの判定結果をまとめて返す関数
          * （renderList / downloadSingleICS / downloadICS で共通利用し、
@@ -435,13 +438,14 @@
         }
 
         /**
-         * 1件だけICSファイルを端末カレンダーに登録させる関数
+         * 1件だけICSファイルを端末カレンダーに登録させる関数（PC・Android等向け）
          *
-         * iPhone/Mac（アプリ内ブラウザを除く）では、download属性を使った
-         * 「ファイルとして保存してから開く」という流れがボトルネックだった
-         * （保存ダイアログ表示中にBlobが失効する／新規タブでblob:が開けない等）。
-         * data:URIへその場で遷移する方式に変えることで、Safari/WebKitが
-         * text/calendarを直接認識し、その場で「すべて追加」画面を開けるようにする。
+         * iPhone/Macでは、この関数は使わず renderList() 内で
+         * 実体のある<a href="blob:...">タグを直接タップさせる方式にしている。
+         * （data:URIへの window.location.href = ... による遷移は、
+         *   フィッシング対策としてWebKitがトップレベルナビゲーションを
+         *   ブロックすることがあり、Safari/Chrome(iOS)いずれでも反応しない
+         *   原因になっていたため廃止）
          */
         function downloadSingleICS(index) {
             const event = events[index];
@@ -449,15 +453,6 @@
 
             const icsData = generateSingleICSData(event);
             const filename = `${event.title}.ics`;
-            const { isIOS, isInAppBrowser } = getEnvFlags();
-
-            if (isIOS && !isInAppBrowser) {
-                // iPhone/iPad の通常ブラウザ：直接遷移してCalendarへ引き渡す
-                const dataUri = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(icsData);
-                window.location.href = dataUri;
-                return;
-            }
-
             const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
 
             if (window.navigator && window.navigator.msSaveOrOpenBlob) {
@@ -489,6 +484,10 @@
 
             // ブラウザ判定ロジック（共通ヘルパーを利用）
             const { isIOS, isInAppBrowser } = getEnvFlags();
+
+            // 前回描画時にiOS用へ発行したblob URLを解放（再計算時のリーク防止）
+            issuedObjectUrls.forEach(u => URL.revokeObjectURL(u));
+            issuedObjectUrls = [];
 
             // ガイドの表示切替
             const guideInApp = document.getElementById('guide-inapp');
@@ -542,16 +541,34 @@
                     Googleカレンダーに追加
                 `;
 
-                const appleBtn = document.createElement('button');
-                appleBtn.type = 'button';
-                appleBtn.onclick = () => downloadSingleICS(index);
-                appleBtn.className = 'inline-flex w-full sm:w-auto justify-center items-center px-3 py-2 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500';
-                appleBtn.innerHTML = `
+                // iOSでは、実体のある<a href="blob:...">を用意し、ユーザーの
+                // タップそのものをリンクの通常ナビゲーションとして扱わせる。
+                // （JSでのclick()合成やlocation.href代入は挙動が不安定なため使わない）
+                const appleBtnClass = 'inline-flex w-full sm:w-auto justify-center items-center px-3 py-2 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500';
+                const appleBtnInnerHTML = `
                     <svg class="mr-1.5 h-4 w-4 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                         <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
                     </svg>
                     iPhone/Macカレンダーに追加
                 `;
+
+                let appleBtn;
+                if (isIOS) {
+                    const icsData = generateSingleICSData(event);
+                    const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
+                    const objectUrl = URL.createObjectURL(blob);
+                    issuedObjectUrls.push(objectUrl);
+
+                    appleBtn = document.createElement('a');
+                    appleBtn.href = objectUrl;
+                    // download属性は付けない（付けるとSafariが「保存」フローに倒れてしまう）
+                } else {
+                    appleBtn = document.createElement('button');
+                    appleBtn.type = 'button';
+                    appleBtn.onclick = () => downloadSingleICS(index);
+                }
+                appleBtn.className = appleBtnClass;
+                appleBtn.innerHTML = appleBtnInnerHTML;
 
                 // どちらか一方が環境依存でうまく動かない場合に備え、常に両方のボタンを表示する。
                 // 検出結果に応じて、より使われやすい方を先（左）に置く。
