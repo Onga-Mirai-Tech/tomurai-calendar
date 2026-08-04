@@ -54,7 +54,7 @@
         <div class="bg-purple-800 text-white p-6 print:hidden">
             <h1 class="text-2xl font-bold text-center flex items-center justify-center gap-2">
                 弔いカレンダー
-                <span class="text-xs font-mono font-normal bg-purple-900/50 px-2 py-0.5 rounded-full text-purple-200">v1.4.2</span>
+                <span class="text-xs font-mono font-normal bg-purple-900/50 px-2 py-0.5 rounded-full text-purple-200">v1.5.0</span>
             </h1>
             <p class="text-center text-sm mt-2 text-purple-200 leading-relaxed">
                 没年月日を入力するだけで、初七日から五十回忌までの法要日程を自動計算し、GoogleカレンダーやAppleカレンダーに登録できます。
@@ -134,28 +134,35 @@
                             カレンダーへの登録手順
                         </h3>
 
-                        <!-- Apple Safari用の詳しい手順 -->
-                        <div id="guide-apple" class="hidden bg-white p-3.5 rounded-md border border-blue-100">
-                            <ol class="text-xs text-blue-900 space-y-3 ml-4 list-decimal font-medium">
-                                <li>下のリストの<strong>「Appleカレンダーに追加」</strong>ボタンを押す</li>
-                                <li>「ダウンロードしますか？」と聞かれたら<strong>「ダウンロード」</strong>を押す</li>
-                                <li>画面の下（または上）のアドレスバーにある <strong>「↓（下矢印）」マーク</strong> を押す<br><span class="text-[10px] text-gray-500 font-normal mt-0.5 block">※見当たらない場合は、URLの横の「ぁあ」の部分を押すと「ダウンロード」メニューが出ます</span></li>
-                                <li><strong>「ダウンロード」</strong>を選択し、保存されたファイルを押す</li>
-                                <li>予定画面が開くので、右上の<strong>「すべて追加」</strong>を押して完了！</li>
-                            </ol>
+                        <!-- アプリ内ブラウザ警告 (LINE等で開いている場合のみ表示) -->
+                        <div id="guide-inapp" class="hidden bg-red-50 border border-red-300 p-3.5 rounded-md mb-3">
+                            <p class="text-xs text-red-700 font-bold leading-relaxed">
+                                LINEなどのアプリ内ブラウザで開いています。この状態だとカレンダーへの登録がブロックされることがあります。<br>
+                                画面右上のメニュー（<strong>⋮ / ︙ / 共有アイコン</strong>など）から<strong>「他のアプリで開く」「Safariで開く」「ブラウザで開く」</strong>を選び直してから、もう一度お試しください。
+                            </p>
+                        </div>
+
+                        <!-- iPhone/Mac (Safari系)用の手順 -->
+                        <div id="guide-ios" class="hidden bg-white p-3.5 rounded-md border border-blue-100 mb-3">
+                            <p class="text-xs text-blue-900 leading-relaxed font-medium">
+                                各予定の<strong>「📅 iPhone/Macカレンダーに追加」</strong>ボタンを押すと、その場で予定の追加画面が開きます。内容を確認して<strong>「すべて追加」</strong>を押せば完了です。
+                            </p>
+                            <p class="text-[10px] text-blue-700 mt-2 leading-relaxed">
+                                ※画面が開かず「ダウンロード」になった場合は、「ファイル」アプリの「ダウンロード」フォルダから保存されたファイルを開いてください。
+                            </p>
                         </div>
 
                         <!-- Google用の手順 -->
                         <div id="guide-google" class="hidden bg-white p-3.5 rounded-md border border-blue-100">
                             <p class="text-xs text-blue-900 leading-relaxed font-medium">
-                                リストの<strong>「Googleカレンダーに追加」</strong>ボタンを押すと、登録画面が開きます。内容を確認してそのまま保存してください。
+                                各予定の<strong>「Googleカレンダーに追加」</strong>ボタンを押すと、登録画面が開きます。内容を確認してそのまま保存してください。
                             </p>
                         </div>
 
                         <div class="mt-3 pt-3 border-t border-blue-200">
-                            <p class="text-[11px] text-red-600 font-bold flex items-start">
+                            <p class="text-[11px] text-gray-500 leading-relaxed">
                                 <span class="mr-1">※</span>
-                                <span>LINE等のアプリ内で開いている場合は機能が制限されます。右上のメニュー（↑や︙など）から「Safariで開く」または「ブラウザで開く」を選び直してください。</span>
+                                <span>うまく反応しない場合は、もう一方のボタンや下部の「一括ダウンロード」もお試しください。</span>
                             </p>
                         </div>
                     </div>
@@ -216,6 +223,27 @@
         let events = [];
 
         /**
+         * 端末・ブラウザの判定結果をまとめて返す関数
+         * （renderList / downloadSingleICS / downloadICS で共通利用し、
+         *   判定ロジックが各所でバラバラになるのを防ぐ）
+         */
+        function getEnvFlags() {
+            const ua = navigator.userAgent.toLowerCase();
+            const isIOS = /iphone|ipad|ipod/.test(ua);
+            const isMac = /macintosh/.test(ua);
+            // Chrome, Edge, Firefox, Operaなどではない純粋なSafariかどうか
+            const isSafari = /safari/.test(ua) && !/chrome|crios|crmo|edg|opr|fxios/.test(ua);
+            // LINE / Instagram / Facebook等のアプリ内ブラウザ（WebView）かどうか
+            // ※LINE等のUAには"Safari"の文字列も含まれることが多く、isSafari単体では
+            //   見分けられないため、ここで別途判定している
+            const isInAppBrowser = /line|micromessenger|instagram|fban|fbav|twitter|threads/i.test(ua);
+            // Apple端末の純正Safari（アプリ内ブラウザは除く）
+            const isAppleSafari = (isIOS || isMac) && isSafari && !isInAppBrowser;
+
+            return { isIOS, isMac, isSafari, isInAppBrowser, isAppleSafari };
+        }
+
+        /**
          * 日付計算メイン処理
          */
         function calculateDates() {
@@ -229,6 +257,10 @@
             }
 
             const baseDate = new Date(deathDateInput);
+            if (isNaN(baseDate.getTime())) {
+                alert('没年月日の形式が正しくありません。もう一度選び直してください。');
+                return;
+            }
             events = []; // 初期化
 
             const addDays = (date, days) => {
@@ -332,6 +364,21 @@
         }
 
         /**
+         * ICSのTEXT値をRFC5545仕様に沿ってエスケープする関数
+         * （バックスラッシュ／カンマ／セミコロン／改行をエスケープ）
+         * これを通さずにSUMMARY/DESCRIPTIONへ差し込むと、
+         * 名前やメモに「,」「;」等が含まれる場合にカレンダーアプリ側で
+         * 正しく読み込めないことがある。
+         */
+        function escapeICSText(text) {
+            return String(text)
+                .replace(/\\/g, '\\\\')
+                .replace(/;/g, '\\;')
+                .replace(/,/g, '\\,')
+                .replace(/\n/g, '\\n');
+        }
+
+        /**
          * Googleカレンダー追加用のURLを生成する関数
          */
         function getGoogleCalendarUrl(event) {
@@ -376,12 +423,10 @@
             icsContent += `DTSTAMP:${dtStamp}` + CRLF;
             icsContent += `DTSTART;VALUE=DATE:${dtStart}` + CRLF;
             icsContent += `DTEND;VALUE=DATE:${dtEnd}` + CRLF;
-            icsContent += `SUMMARY:${event.title}` + CRLF;
+            icsContent += `SUMMARY:${escapeICSText(event.title)}` + CRLF;
             
-            let desc = generateDescriptionText(event);
-            const escapedDesc = desc.replace(/\n/g, '\\n');
-            
-            icsContent += `DESCRIPTION:${escapedDesc}` + CRLF;
+            const desc = generateDescriptionText(event);
+            icsContent += `DESCRIPTION:${escapeICSText(desc)}` + CRLF;
             icsContent += "TRANSP:TRANSPARENT" + CRLF;
             icsContent += "END:VEVENT" + CRLF;
             icsContent += "END:VCALENDAR" + CRLF;
@@ -390,30 +435,47 @@
         }
 
         /**
-         * 1件だけICSファイルを確実な方法でダウンロードさせる関数
+         * 1件だけICSファイルを端末カレンダーに登録させる関数
+         *
+         * iPhone/Mac（アプリ内ブラウザを除く）では、download属性を使った
+         * 「ファイルとして保存してから開く」という流れがボトルネックだった
+         * （保存ダイアログ表示中にBlobが失効する／新規タブでblob:が開けない等）。
+         * data:URIへその場で遷移する方式に変えることで、Safari/WebKitが
+         * text/calendarを直接認識し、その場で「すべて追加」画面を開けるようにする。
          */
         function downloadSingleICS(index) {
             const event = events[index];
             if (!event) return;
-            
+
             const icsData = generateSingleICSData(event);
             const filename = `${event.title}.ics`;
+            const { isIOS, isInAppBrowser } = getEnvFlags();
+
+            if (isIOS && !isInAppBrowser) {
+                // iPhone/iPad の通常ブラウザ：直接遷移してCalendarへ引き渡す
+                const dataUri = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(icsData);
+                window.location.href = dataUri;
+                return;
+            }
+
             const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
-            
+
             if (window.navigator && window.navigator.msSaveOrOpenBlob) {
                 window.navigator.msSaveOrOpenBlob(blob, filename);
                 return;
             }
-            
-            // 全てのブラウザで最も確実な標準ダウンロード方式を使用
+
+            // PC・Android等：標準的なファイルダウンロード方式
+            // (target="_blank"は新規タブでblob:が読み込めない場合があるため使用しない)
             const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
+            const objectUrl = URL.createObjectURL(blob);
+            link.href = objectUrl;
             link.download = filename;
-            link.target = '_blank';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            setTimeout(() => URL.revokeObjectURL(link.href), 100);
+            // 保存ダイアログ操作に時間がかかっても失効しないよう十分な遅延を確保
+            setTimeout(() => URL.revokeObjectURL(objectUrl), 10000);
         }
 
         /**
@@ -425,27 +487,16 @@
 
             const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' };
 
-            // ブラウザ判定ロジック
-            const ua = navigator.userAgent.toLowerCase();
-            const isIOS = /iphone|ipad|ipod/.test(ua);
-            const isMac = /macintosh/.test(ua);
-            // Chrome, Edge, Firefox, Operaなどではない純粋なSafariかどうか
-            const isSafari = /safari/.test(ua) && !/chrome|crios|crmo|edg|opr|fxios/.test(ua);
-            // Apple端末の純正Safariであるかのフラグ
-            const isAppleSafari = (isIOS || isMac) && isSafari;
+            // ブラウザ判定ロジック（共通ヘルパーを利用）
+            const { isIOS, isInAppBrowser } = getEnvFlags();
 
             // ガイドの表示切替
-            const guideApple = document.getElementById('guide-apple');
+            const guideInApp = document.getElementById('guide-inapp');
+            const guideIOS = document.getElementById('guide-ios');
             const guideGoogle = document.getElementById('guide-google');
-            if (guideApple && guideGoogle) {
-                if (isAppleSafari) {
-                    guideApple.classList.remove('hidden');
-                    guideGoogle.classList.add('hidden');
-                } else {
-                    guideApple.classList.add('hidden');
-                    guideGoogle.classList.remove('hidden');
-                }
-            }
+            if (guideInApp) guideInApp.classList.toggle('hidden', !isInAppBrowser);
+            if (guideIOS) guideIOS.classList.toggle('hidden', !isIOS);
+            if (guideGoogle) guideGoogle.classList.remove('hidden');
 
             events.forEach((event, index) => {
                 const li = document.createElement('li');
@@ -482,6 +533,7 @@
                 const googleBtn = document.createElement('a');
                 googleBtn.href = googleUrl;
                 googleBtn.target = '_blank';
+                googleBtn.rel = 'noopener noreferrer';
                 googleBtn.className = 'inline-flex w-full sm:w-auto justify-center items-center px-3 py-2 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500';
                 googleBtn.innerHTML = `
                     <svg class="mr-1.5 h-4 w-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -491,19 +543,24 @@
                 `;
 
                 const appleBtn = document.createElement('button');
+                appleBtn.type = 'button';
                 appleBtn.onclick = () => downloadSingleICS(index);
                 appleBtn.className = 'inline-flex w-full sm:w-auto justify-center items-center px-3 py-2 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500';
                 appleBtn.innerHTML = `
                     <svg class="mr-1.5 h-4 w-4 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                         <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
                     </svg>
-                    Appleカレンダーに追加
+                    iPhone/Macカレンダーに追加
                 `;
 
-                if (isAppleSafari) {
+                // どちらか一方が環境依存でうまく動かない場合に備え、常に両方のボタンを表示する。
+                // 検出結果に応じて、より使われやすい方を先（左）に置く。
+                if (isIOS) {
                     actionDiv.appendChild(appleBtn);
+                    actionDiv.appendChild(googleBtn);
                 } else {
                     actionDiv.appendChild(googleBtn);
+                    actionDiv.appendChild(appleBtn);
                 }
 
                 li.appendChild(topDiv);
@@ -537,12 +594,10 @@
                 icsContent += `DTSTAMP:${dtStamp}` + CRLF;
                 icsContent += `DTSTART;VALUE=DATE:${dtStart}` + CRLF;
                 icsContent += `DTEND;VALUE=DATE:${dtEnd}` + CRLF;
-                icsContent += `SUMMARY:${event.title}` + CRLF;
+                icsContent += `SUMMARY:${escapeICSText(event.title)}` + CRLF;
                 
-                let desc = generateDescriptionText(event);
-                const escapedDesc = desc.replace(/\n/g, '\\n');
-                
-                icsContent += `DESCRIPTION:${escapedDesc}` + CRLF;
+                const desc = generateDescriptionText(event);
+                icsContent += `DESCRIPTION:${escapeICSText(desc)}` + CRLF;
                 icsContent += "TRANSP:TRANSPARENT" + CRLF;
                 icsContent += "END:VEVENT" + CRLF;
             });
@@ -571,11 +626,12 @@
         function downloadICS() {
             if (events.length === 0) return;
 
-            const ua = navigator.userAgent.toLowerCase();
-            const isInAppBrowser = /line|micromessenger|instagram|facebook|fbav|twitter|threads/i.test(ua);
-            
+            const { isIOS, isInAppBrowser } = getEnvFlags();
+
             if (isInAppBrowser) {
                 alert('【重要】\nLINEなどのアプリ内ブラウザでは、カレンダー一括登録がブロックされる可能性が高いです。\n\nリストの各項目にある「個別登録ボタン」をご利用いただくか、画面右上のメニューから「Safariで開く（ブラウザで開く）」を選択してからお試しください。');
+            } else if (isIOS) {
+                alert('【ご案内】\niPhone/iPadでは、各予定の「iPhone/Macカレンダーに追加」ボタンから1件ずつ登録する方法が確実です。\nこの一括ダウンロードは主にパソコン向けの機能です。');
             }
 
             const icsData = generateICS();
@@ -590,14 +646,16 @@
             }
             
             // 全てのブラウザで最も確実な標準ダウンロード方式を使用
+            // (target="_blank"は新規タブでblob:が読み込めない場合があるため使用しない)
             const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
+            const objectUrl = URL.createObjectURL(blob);
+            link.href = objectUrl;
             link.download = filename;
-            link.target = '_blank';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            setTimeout(() => URL.revokeObjectURL(link.href), 100);
+            // 保存ダイアログ操作に時間がかかっても失効しないよう十分な遅延を確保
+            setTimeout(() => URL.revokeObjectURL(objectUrl), 10000);
         }
     </script>
 </body>
