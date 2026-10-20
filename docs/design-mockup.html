@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<!--
+  デザイン見直しの見本（2案）。本番では使わない。スマホ幅 375px で、入力画面と計算結果を並べて見せる。
+  A: 和モダン（生成りの紙・藤色・明朝の見出し・日程は時間の流れで並べる）
+  B: 藤色グラデーション（OGPカードと同じ雰囲気・白いカード・日付を大きく）
+  2026-10-20 に B 案で決定し、index.html（v1.7.0）に反映した。見本は雰囲気を見るためのもので、
+  法要の一部（六七日など）を省いているため「次の法要」や日数は実際の計算と合っていない。
+-->
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif; background: #e9e6ee; padding: 40px; width: 1700px; }
+  .row { display: flex; gap: 36px; align-items: flex-start; }
+  .label { width: 790px; font-size: 26px; font-weight: 700; color: #3b2a4a; margin-bottom: 18px; }
+  .label small { display: block; font-size: 16px; font-weight: 400; color: #6b5a7a; margin-top: 6px; }
+  .phone { width: 375px; height: 1180px; overflow: hidden; border-radius: 28px; box-shadow: 0 16px 40px rgba(40, 20, 60, .18); position: relative; }
+  .pair { display: flex; gap: 40px; }
+  .mincho { font-family: "Hiragino Mincho ProN", "Yu Mincho", serif; }
+  svg.i { width: 16px; height: 16px; flex: none; }
+
+  /* ===================== A: 和モダン ===================== */
+  .a { background: #faf7f2; color: #3a3340; }
+  .a .top { padding: 34px 24px 18px; text-align: center; }
+  .a .logo { display: inline-flex; align-items: center; gap: 10px; }
+  .a .logo img { width: 34px; height: 34px; }
+  .a .logo span { font-size: 26px; font-weight: 600; letter-spacing: .12em; color: #5b3f86; }
+  .a .lead { margin-top: 12px; font-size: 13.5px; line-height: 1.8; color: #6e6578; }
+  .a .rule { width: 48px; height: 2px; background: #c9b6e0; margin: 16px auto 0; border-radius: 2px; }
+  .a .card { margin: 0 16px 16px; background: #fff; border: 1px solid #ece4f2; border-radius: 18px; padding: 20px 18px; }
+  .a .field { margin-bottom: 16px; }
+  .a .field label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  .a .field label small { font-weight: 400; color: #9a90a4; font-size: 12px; margin-left: 4px; }
+  .a .input { height: 48px; border: 1px solid #ddd3e6; border-radius: 12px; padding: 0 14px; display: flex; align-items: center; font-size: 16px; background: #fdfcfe; }
+  .a .input.ph { color: #b3a9bd; }
+  .a .input.date { justify-content: space-between; }
+  .a .btn { height: 54px; border-radius: 999px; background: #7c5aa6; color: #fff; font-size: 17px; font-weight: 700; letter-spacing: .08em; display: grid; place-items: center; box-shadow: 0 8px 18px rgba(124, 90, 166, .28); }
+  .a .notes { margin: 0 16px; font-size: 12.5px; color: #7a7085; line-height: 1.7; }
+  .a .notes summary { list-style: none; display: flex; align-items: center; gap: 6px; padding: 10px 4px; color: #5b3f86; font-weight: 600; }
+  .a .sum { margin: 22px 16px 14px; text-align: center; }
+  .a .sum .who { font-size: 20px; font-weight: 600; letter-spacing: .08em; }
+  .a .sum .when { margin-top: 4px; font-size: 13px; color: #7a7085; }
+  .a .sec { margin: 22px 20px 10px; display: flex; align-items: baseline; gap: 10px; }
+  .a .sec h3 { font-size: 18px; font-weight: 600; color: #5b3f86; letter-spacing: .1em; }
+  .a .sec span { font-size: 12px; color: #9a90a4; }
+  .a .tl { margin: 0 16px 0 20px; border-left: 2px solid #e2d6ef; padding-left: 18px; }
+  .a .ev { position: relative; padding: 4px 0 18px; }
+  .a .ev::before { content: ""; position: absolute; left: -25px; top: 9px; width: 12px; height: 12px; border-radius: 50%; background: #fff; border: 3px solid #b497d6; }
+  .a .ev.next::before { background: #7c5aa6; border-color: #7c5aa6; box-shadow: 0 0 0 4px #ebe1f6; }
+  .a .ev .d { display: flex; align-items: baseline; gap: 8px; }
+  .a .ev .md { font-size: 21px; font-weight: 600; letter-spacing: .04em; }
+  .a .ev .y { font-size: 12px; color: #9a90a4; }
+  .a .ev .n { margin-top: 2px; font-size: 15px; font-weight: 700; }
+  .a .ev .n em { font-style: normal; font-size: 11px; font-weight: 700; color: #fff; background: #7c5aa6; border-radius: 999px; padding: 2px 8px; margin-left: 6px; vertical-align: 1px; }
+  .a .ev .m { margin-top: 4px; font-size: 12.5px; color: #7a7085; display: flex; align-items: center; gap: 4px; }
+  .a .ev .acts { margin-top: 10px; display: flex; gap: 8px; }
+  .a .ev .acts span { flex: 1; height: 40px; border: 1px solid #ddd3e6; border-radius: 10px; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; background: #fff; }
+
+  .a .ev.past, .b .ev.past { opacity: .5; }
+
+  /* ===================== B: 藤色グラデーション ===================== */
+  .b { background: linear-gradient(180deg, #f6f0fc 0%, #fbf9fd 40%, #f4eefa 100%); color: #33263f; }
+  .b .hero { margin: 14px; border-radius: 26px; padding: 26px 22px 24px; background: linear-gradient(135deg, #efe3fb 0%, #e3d3f7 100%); position: relative; overflow: hidden; }
+  .b .hero::after { content: ""; position: absolute; right: -40px; top: -40px; width: 150px; height: 150px; border-radius: 50%; background: rgba(255,255,255,.45); }
+  .b .hero .logo { display: flex; align-items: center; gap: 12px; position: relative; z-index: 1; }
+  .b .hero img { width: 46px; height: 46px; filter: drop-shadow(0 6px 10px rgba(107, 33, 168, .25)); }
+  .b .hero h1 { font-size: 27px; font-weight: 600; letter-spacing: .08em; color: #5b1d91; }
+  .b .hero p { margin-top: 14px; font-size: 14px; line-height: 1.75; color: #574569; position: relative; z-index: 1; }
+  .b .hero .chips { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px; position: relative; z-index: 1; }
+  .b .hero .chips span { font-size: 12px; font-weight: 700; color: #6b21a8; background: rgba(255,255,255,.75); border-radius: 999px; padding: 4px 10px; }
+  .b .card { margin: 0 14px 14px; background: #fff; border-radius: 22px; padding: 20px 18px; box-shadow: 0 10px 30px rgba(107, 33, 168, .08); }
+  .b .field { margin-bottom: 14px; }
+  .b .field label { display: block; font-size: 13px; font-weight: 700; color: #6b5a7a; margin-bottom: 6px; letter-spacing: .04em; }
+  .b .field label b { color: #c026d3; }
+  .b .input { height: 50px; border-radius: 14px; padding: 0 14px; display: flex; align-items: center; font-size: 16px; background: #f7f3fb; border: 2px solid transparent; }
+  .b .input.ph { color: #a99bb8; }
+  .b .input.focus { background: #fff; border-color: #a855f7; box-shadow: 0 0 0 4px #f3e8ff; justify-content: space-between; }
+  .b .btn { height: 56px; border-radius: 16px; background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); color: #fff; font-size: 17px; font-weight: 700; letter-spacing: .06em; display: grid; place-items: center; box-shadow: 0 10px 22px rgba(126, 34, 206, .3); }
+  .b .info { margin: 0 14px; display: flex; gap: 8px; }
+  .b .info span { flex: 1; background: rgba(255,255,255,.8); border-radius: 14px; padding: 10px; font-size: 11.5px; line-height: 1.5; color: #6b5a7a; display: flex; gap: 6px; }
+  .b .sum { margin: 18px 14px 12px; background: #fff; border-radius: 22px; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 10px 30px rgba(107, 33, 168, .08); }
+  .b .sum .who { font-size: 18px; font-weight: 600; letter-spacing: .06em; }
+  .b .sum .when { font-size: 12.5px; color: #8a7a98; margin-top: 2px; }
+  .b .sum .print { font-size: 12px; font-weight: 700; color: #7e22ce; background: #f3e8ff; border-radius: 999px; padding: 8px 12px; display: flex; gap: 4px; align-items: center; }
+  .b .tabs { margin: 0 14px 12px; background: rgba(255,255,255,.7); border-radius: 14px; padding: 4px; display: flex; }
+  .b .tabs span { flex: 1; text-align: center; font-size: 13.5px; font-weight: 700; padding: 9px 0; border-radius: 11px; color: #8a7a98; }
+  .b .tabs span.on { background: #fff; color: #6b21a8; box-shadow: 0 2px 8px rgba(107, 33, 168, .12); }
+  .b .ev { margin: 0 14px 10px; background: #fff; border-radius: 20px; padding: 14px; display: flex; gap: 14px; box-shadow: 0 6px 18px rgba(107, 33, 168, .06); }
+  .b .ev.next { box-shadow: 0 0 0 2px #c084fc, 0 10px 24px rgba(126, 34, 206, .14); }
+  .b .cal { flex: none; width: 62px; border-radius: 14px; overflow: hidden; text-align: center; background: #faf5ff; border: 1px solid #ecdcfb; }
+  .b .cal .mo { background: #a855f7; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 0; }
+  .b .cal .dy { font-size: 26px; font-weight: 700; color: #4c1d75; line-height: 1.25; padding-top: 2px; }
+  .b .cal .wd { font-size: 11px; color: #8a7a98; padding-bottom: 5px; }
+  .b .body { flex: 1; min-width: 0; }
+  .b .body .n { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .b .body .n em { font-style: normal; font-size: 10.5px; color: #fff; background: linear-gradient(135deg, #a855f7, #7e22ce); border-radius: 999px; padding: 2px 8px; }
+  .b .body .y { font-size: 12px; color: #8a7a98; margin-top: 2px; }
+  .b .body .acts { margin-top: 10px; display: flex; gap: 6px; }
+  .b .body .acts span { flex: 1; height: 38px; border-radius: 11px; background: #f7f3fb; font-size: 12.5px; font-weight: 700; color: #4c1d75; display: flex; align-items: center; justify-content: center; gap: 5px; }
+</style>
+</head>
+<body>
+<div class="row">
+
+  <!-- ===================== A ===================== -->
+  <div>
+    <div class="label">A 案：和モダン<small>生成りの紙のような背景に、藤色と明朝の見出し。日程は「時の流れ」の線で並べ、次に来る法要に印をつける。落ち着き・品のよさを重視</small></div>
+    <div class="pair">
+      <div class="phone a">
+        <div class="top">
+          <div class="logo"><img src="../favicon.svg" alt=""><span class="mincho">弔いカレンダー</span></div>
+          <p class="lead">没年月日を入れるだけで、<br>初七日から五十回忌までの日程がわかります。</p>
+          <div class="rule"></div>
+        </div>
+        <div class="card">
+          <div class="field"><label>没年月日</label><div class="input date">2026 / 09 / 10<svg class="i" viewBox="0 0 20 20" fill="#7c5aa6"><path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1z"/></svg></div></div>
+          <div class="field"><label>故人のお名前<small>任意</small></label><div class="input">山田 太郎</div></div>
+          <div class="field"><label>戒名・法名<small>任意</small></label><div class="input ph">例：〇〇院釋〇〇</div></div>
+          <div class="field"><label>メモ<small>任意・すべての予定に入ります</small></label><div class="input ph" style="height:72px;align-items:flex-start;padding-top:12px">お寺の電話番号など</div></div>
+          <div class="btn">日程を計算する</div>
+        </div>
+        <details class="notes" open><summary>▸ ご利用にあたって</summary>一般的な数え方で計算しています。お寺や地域によって異なることがあるため、最終的な日程は菩提寺へご相談ください。入力した内容は、お使いの端末の外へは送られません。</details>
+      </div>
+
+      <div class="phone a">
+        <div class="sum">
+          <div class="who mincho">山田 太郎 様</div>
+          <div class="when">2026年9月10日 ご逝去　・　18の法要</div>
+        </div>
+        <div class="sec"><h3 class="mincho">中陰法要</h3><span>亡くなった日から七日ごと</span></div>
+        <div class="tl">
+          <div class="ev past">
+            <div class="d"><span class="md mincho">9月16日（水）</span><span class="y">2026年</span></div>
+            <div class="n">初七日</div>
+            <div class="m">▸ 意味を見る</div>
+          </div>
+          <div class="ev past">
+            <div class="d"><span class="md mincho">9月23日（水）</span><span class="y">2026年</span></div>
+            <div class="n">二七日</div>
+            <div class="m">▸ 意味を見る</div>
+          </div>
+          <div class="ev past">
+            <div class="d"><span class="md mincho">9月30日（水）</span><span class="y">2026年</span></div>
+            <div class="n">三七日</div>
+            <div class="m">▸ 意味を見る</div>
+          </div>
+          <div class="ev next">
+            <div class="d"><span class="md mincho">10月28日（水）</span><span class="y">2026年</span></div>
+            <div class="n">七七日（四十九日）<em>次の法要・あと8日</em></div>
+            <div class="m">▸ 意味を見る</div>
+            <div class="acts"><span>📅 iPhoneに追加</span><span>Googleに追加</span></div>
+          </div>
+        </div>
+        <div class="sec"><h3 class="mincho">年回法要</h3><span>祥月命日に営みます</span></div>
+        <div class="tl">
+          <div class="ev">
+            <div class="d"><span class="md mincho">9月10日（金）</span><span class="y">2027年</span></div>
+            <div class="n">一周忌</div>
+            <div class="m">▸ 意味を見る</div>
+            <div class="acts"><span>📅 iPhoneに追加</span><span>Googleに追加</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== B ===================== -->
+  <div>
+    <div class="label">B 案：藤色グラデーション<small>カード画像（OGP）と同じ淡い藤色。白いカードに、日めくりのような日付を大きく。中陰と年回をタブで切り替え。やさしく、今どきの印象</small></div>
+    <div class="pair">
+      <div class="phone b">
+        <div class="hero">
+          <div class="logo"><img src="../favicon.svg" alt=""><h1 class="mincho">弔いカレンダー</h1></div>
+          <p>没年月日を入れるだけで、初七日から五十回忌までの法要の日程を計算します。</p>
+          <div class="chips"><span>カレンダーに登録</span><span>印刷・PDF</span><span>無料</span></div>
+        </div>
+        <div class="card">
+          <div class="field"><label>没年月日 <b>*</b></label><div class="input focus">2026 / 09 / 10<svg class="i" viewBox="0 0 20 20" fill="#a855f7"><path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1z"/></svg></div></div>
+          <div class="field"><label>故人のお名前（任意）</label><div class="input">山田 太郎</div></div>
+          <div class="field"><label>戒名・法名（任意）</label><div class="input ph">例：〇〇院釋〇〇</div></div>
+          <div class="field"><label>メモ（任意）</label><div class="input ph" style="height:72px;align-items:flex-start;padding-top:12px">お寺の電話番号など</div></div>
+          <div class="btn">法要の日程を計算する</div>
+        </div>
+        <div class="info">
+          <span>🔒 入力した内容は端末の外へ送られません</span>
+          <span>🙏 日程はお寺・地域で異なります。菩提寺へご相談を</span>
+        </div>
+      </div>
+
+      <div class="phone b">
+        <div class="sum">
+          <div><div class="who mincho">山田 太郎 様</div><div class="when">2026年9月10日 ご逝去</div></div>
+          <div class="print">🖨 印刷</div>
+        </div>
+        <div class="tabs"><span class="on">中陰法要</span><span>年回法要</span><span>すべて</span></div>
+        <div class="ev past">
+          <div class="cal"><div class="mo">9月</div><div class="dy">16</div><div class="wd">水</div></div>
+          <div class="body"><div class="n">初七日</div><div class="y">2026年・7日目</div>
+            <div class="acts"><span>📅 iPhone</span><span>Google</span></div></div>
+        </div>
+        <div class="ev past">
+          <div class="cal"><div class="mo">9月</div><div class="dy">23</div><div class="wd">水</div></div>
+          <div class="body"><div class="n">二七日</div><div class="y">2026年・14日目</div>
+            <div class="acts"><span>📅 iPhone</span><span>Google</span></div></div>
+        </div>
+        <div class="ev past">
+          <div class="cal"><div class="mo">9月</div><div class="dy">30</div><div class="wd">水</div></div>
+          <div class="body"><div class="n">三七日</div><div class="y">2026年・21日目</div>
+            <div class="acts"><span>📅 iPhone</span><span>Google</span></div></div>
+        </div>
+        <div class="ev past">
+          <div class="cal"><div class="mo">10月</div><div class="dy">7</div><div class="wd">水</div></div>
+          <div class="body"><div class="n">四七日</div><div class="y">2026年・28日目</div>
+            <div class="acts"><span>📅 iPhone</span><span>Google</span></div></div>
+        </div>
+        <div class="ev past">
+          <div class="cal"><div class="mo">10月</div><div class="dy">14</div><div class="wd">水</div></div>
+          <div class="body"><div class="n">五七日</div><div class="y">2026年・35日目</div>
+            <div class="acts"><span>📅 iPhone</span><span>Google</span></div></div>
+        </div>
+        <div class="ev next">
+          <div class="cal"><div class="mo">10月</div><div class="dy">28</div><div class="wd">水</div></div>
+          <div class="body"><div class="n">七七日（四十九日）<em>あと8日</em></div><div class="y">2026年・49日目</div>
+            <div class="acts"><span>📅 iPhone</span><span>Google</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -17,7 +17,7 @@ sleep 1
 
 for mode in form top list; do
   "$CHROME" --headless --disable-gpu --hide-scrollbars \
-    --force-device-scale-factor=2 --window-size=600,812 --virtual-time-budget=5000 \
+    --force-device-scale-factor=2 --window-size=600,812 --virtual-time-budget=10000 \
     --screenshot="$PWD/screens/$mode.png" \
     "http://127.0.0.1:$PORT/promo/instagram/capture.html?mode=$mode" >/dev/null 2>&1
   sips -c 1624 750 "screens/$mode.png" >/dev/null   # 中央に置いた iframe の部分だけを残す

@@ -10,7 +10,8 @@ const m = html.match(/\/\/ ==== LOGIC START ====([\s\S]*?)\/\/ ==== LOGIC END ==
 assert.ok(m, 'index.html に LOGIC START/END が見つかりません');
 const L = new Function(`${m[1]}
   return { SITE_URL, HOYO_DEFS, parseDateInput, addDays, addYears, calculateHoyo, uidFor,
-           buildDescription, escapeICSText, foldICSLine, buildICS, getGoogleCalendarUrl, detectEnv };`)();
+           buildDescription, escapeICSText, foldICSLine, buildICS, getGoogleCalendarUrl, detectEnv,
+           daysBetween, findNextIndex };`)();
 
 const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const byName = (events, name) => events.find(e => e.name === name);
@@ -116,4 +117,32 @@ test('端末の判定（iPad は Mac を名乗ってもタッチ操作で見分�
   assert.equal(L.detectEnv(iphoneUA, 5).isIOS, true);
   assert.equal(L.detectEnv(iphoneUA + ' Line/14.0.0', 5).isInAppBrowser, true);
   assert.equal(L.detectEnv(iphoneUA, 5).isInAppBrowser, false);
+});
+
+test('区分と補足（七日ごと・百箇日は「◯日目」、年回忌は「満◯年」）', () => {
+  const ev = L.calculateHoyo(L.parseDateInput('2026-09-10'), '');
+  assert.equal(byName(ev, '初七日').group, 'chuin');
+  assert.equal(byName(ev, '初七日').sub, '7日目');
+  assert.equal(byName(ev, '百箇日').group, 'chuin');
+  assert.equal(byName(ev, '百箇日').sub, '100日目');
+  assert.equal(byName(ev, '一周忌').group, 'nenki');
+  assert.equal(byName(ev, '三回忌').sub, '満2年');
+});
+
+test('次の法要（今日の法要は「次」に含める）', () => {
+  const ev = L.calculateHoyo(L.parseDateInput('2026-09-10'), '');
+  const at = (s) => { const d = L.parseDateInput(s); d.setHours(15, 30); return d; };
+  assert.equal(ev[L.findNextIndex(ev, at('2026-10-20'))].name, '六七日');
+  assert.equal(ev[L.findNextIndex(ev, at('2026-10-21'))].name, '六七日');
+  assert.equal(ev[L.findNextIndex(ev, at('2026-10-22'))].name, '七七日（四十九日）');
+  assert.equal(ev[L.findNextIndex(ev, at('2026-10-29'))].name, '百箇日');
+  assert.equal(L.findNextIndex(ev, at('2026-09-01')), 0);
+  assert.equal(L.findNextIndex(ev, at('2080-01-01')), -1);
+});
+
+test('日数（時刻や夏時間に左右されない）', () => {
+  assert.equal(L.daysBetween(L.parseDateInput('2026-10-20'), L.parseDateInput('2026-10-28')), 8);
+  assert.equal(L.daysBetween(L.parseDateInput('2026-10-28'), L.parseDateInput('2026-10-28')), 0);
+  // ロサンゼルスの夏時間の終わり（2026-11-01）をまたぐ
+  assert.equal(L.daysBetween(L.parseDateInput('2026-10-30'), L.parseDateInput('2026-11-03')), 4);
 });
