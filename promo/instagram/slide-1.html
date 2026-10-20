@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<!-- 1枚目（表紙）: ひと目で「法要の日程がわかる・カレンダーと紙に残せる」と伝わるように -->
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="slide.css">
+<style>
+  .label { position: absolute; top: 86px; left: 0; right: 0; text-align: center; }
+  .head {
+    position: absolute; top: 176px; left: 0; right: 0; text-align: center;
+    font-size: 92px; font-weight: 600; line-height: 1.32; letter-spacing: .05em; color: #6b21a8;
+  }
+  .sub { position: absolute; top: 450px; left: 0; right: 0; text-align: center; font-size: 38px; font-weight: 700; line-height: 1.5; }
+  .paper { left: 96px; top: 640px; width: 430px; transform: rotate(-5deg); }
+  .phone { left: 560px; top: 600px; width: 400px; height: 866px; transform: rotate(4deg); }
+  .band {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 200px;
+    background: #ffffff; border-top: 6px solid #e9d5ff;
+    display: flex; align-items: center; justify-content: center; gap: 28px;
+  }
+  .band img { width: 112px; height: 112px; }
+  .band .name { font-size: 66px; font-weight: 600; color: #6b21a8; letter-spacing: .05em; line-height: 1.1; }
+  .band .tags { font-size: 28px; font-weight: 700; margin-top: 8px; color: #6b5a7a; }
+</style>
+</head>
+<body>
+  <div class="label"><span class="pill">無料・登録不要の WEBアプリ</span></div>
+  <h1 class="head mincho">法要の日程を、<br>ひと目で。</h1>
+  <p class="sub">没年月日を入れるだけで<br>初七日から五十回忌まで 自動で計算します</p>
+
+  <div class="paper"><img src="screens/print.png" alt=""></div>
+  <div class="phone"><img src="screens/top.png" alt=""></div>
+
+  <div class="band">
+    <img src="../../favicon.svg" alt="">
+    <div>
+      <div class="name mincho">弔いカレンダー</div>
+      <div class="tags">カレンダーに登録 ／ 印刷・PDFで保存</div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<!-- 3枚目: 使い方（入力 → 確認 → 登録） -->
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="slide.css">
+<style>
+  .steps { position: absolute; top: 330px; left: 50px; right: 50px; display: flex; justify-content: space-between; }
+  .step { width: 312px; display: flex; flex-direction: column; align-items: center; }
+  .num {
+    width: 76px; height: 76px; border-radius: 50%; background: #7e22ce; color: #ffffff;
+    display: grid; place-items: center; font-size: 40px; font-weight: 700; margin-bottom: 22px;
+  }
+  .step .phone { position: relative; width: 300px; height: 650px; border-width: 11px; border-radius: 40px; }
+  .step h2 { margin-top: 30px; font-size: 36px; font-weight: 700; text-align: center; line-height: 1.35; }
+  .step p { margin-top: 10px; font-size: 26px; color: #6b5a7a; text-align: center; line-height: 1.5; }
+</style>
+</head>
+<body>
+  <div class="page">3 / 5</div>
+  <div class="title"><h1>使い方は 3ステップ</h1><p>アプリのインストールは いりません</p></div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="num">1</div>
+      <div class="phone"><img src="screens/form.png" alt=""></div>
+      <h2>没年月日を<br>入れる</h2>
+      <p>お名前・戒名・メモは<br>入れなくても大丈夫</p>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <div class="phone"><img src="screens/top.png" alt=""></div>
+      <h2>日程を<br>確かめる</h2>
+      <p>曜日と、それぞれの<br>法要の意味も表示</p>
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <div class="phone"><img src="screens/list.png" alt=""></div>
+      <h2>カレンダーに<br>登録する</h2>
+      <p>iPhone・Googleの<br>カレンダーに対応</p>
+    </div>
+  </div>
+</body>
+</html>

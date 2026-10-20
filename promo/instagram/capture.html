@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<!--
+  アプリの画面写真（screens/）を見本データで撮るためのページ。generate-screens.sh から使う。
+  ヘッドレスの Chrome は窓を 375px 幅まで狭められないため、375x812 の iframe の中にアプリを表示して撮り、あとで切り抜く。
+  中身（?inner=1）は index.html を読み込み、見本データを入れて計算した状態にしてから表示する。
+  ?mode=form（入力画面） / top（計算結果の先頭） / list（年回法要のあたり） / print（印刷用）
+-->
+<html lang="ja">
+<head><meta charset="UTF-8"><style>html, body { margin: 0; } iframe { display: block; width: 375px; height: 812px; border: 0; margin: 0 auto; }</style></head>
+<body>
+<script>
+(async () => {
+  const params = new URLSearchParams(location.search);
+  const mode = params.get('mode') || 'form';
+  if (mode !== 'print' && !params.get('inner')) {
+    const frame = document.createElement('iframe');
+    frame.src = `capture.html?inner=1&mode=${mode}`;
+    document.body.appendChild(frame);
+    return;
+  }
+  const html = await (await fetch('/index.html')).text();
+  // iPhone で開いたときの表示（iPhone 用の登録ボタン・手順）にする
+  const head = `<base href="/"><script>
+    Object.defineProperty(navigator, 'userAgent', { get: () => 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1' });
+  <\/script>`;
+  const inject = `<script>
+    document.getElementById('deceasedName').value = '山田 太郎';
+    document.getElementById('kaimyo').value = '〇〇院釋〇〇';
+    document.getElementById('customNote').value = '〇〇寺 電話 000-0000-0000';
+    document.getElementById('deathDate').value = '2026-09-10';
+    ${mode !== 'form' ? 'calculateDates(false);' : ''}
+    setTimeout(() => {
+      const top = el => el.getBoundingClientRect().top + scrollY;
+      ${mode === 'form' ? "window.scrollTo(0, top(document.getElementById('deceasedName')) - 120);" : ''}
+      ${mode === 'top' ? "window.scrollTo(0, top(document.getElementById('resultList')) - 16);" : ''}
+      ${mode === 'list' ? "window.scrollTo(0, top(document.querySelectorAll('#resultList li')[8]) - 16);" : ''}
+    }, 600);
+  <\/script>`;
+  document.open();
+  document.write(html.replace('<head>', '<head>' + head).replace('</body>', inject + '</body>'));
+  document.close();
+})();
+</script>
+</body>
+</html>
