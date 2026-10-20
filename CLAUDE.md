@@ -28,3 +28,5 @@
 `scripts/build.sh` が `dist/` に集めたものだけが公開される: `index.html`・`assets/`・`qr.svg`・`favicon.svg`・`icon-180.png`・`ogp.png` と `server/.htaccess`。公開ファイルを足したら `scripts/build.sh` にも追記する。
 
 - アイコン・カード画像の絵は `favicon.svg` が元。変えたら `bash scripts/brand/generate.sh`（Google Chrome と macOS の sips を使う）で `icon-180.png` と `ogp.png` を作り直す
+
+- Instagram 投稿用の素材は `promo/instagram/`（本文・代替テキストは `caption.md`）。公開サイト（`dist/`）には含めない
