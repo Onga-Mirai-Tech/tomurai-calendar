@@ -4,9 +4,18 @@
 version: 2
 updates:
   - package-ecosystem: "github-actions"
-    directory: "/"
+    # "/" は .github/workflows/ を見る。デプロイ用の部品（.github/actions/deploy-xserver/action.yml）の中で
+    # 使っている actions/setup-node なども更新されるよう、.github/actions/ の下も対象にする
+    directories:
+      - "/"
+      - "/.github/actions/*"
     schedule:
       interval: "monthly"
+    # 同じ部品の更新は1つの Pull Request にまとめる（workflows と action.yml で別々に届かないように）
+    groups:
+      actions:
+        patterns:
+          - "*"
     commit-message:
       prefix: "Actions 更新"
     labels: []
