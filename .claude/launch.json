@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "tomurai-calendar-dist",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "bash scripts/build.sh && python3 scripts/serve-dist.py 8767"],
+      "port": 8767
+    }
+  ]
+}

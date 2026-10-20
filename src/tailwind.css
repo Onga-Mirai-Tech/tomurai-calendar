@@ -1,0 +1,53 @@
+/*
+  Tailwind CSS の入力ファイル。
+  npm run build:css（開発中は npm run dev:css）で assets/app.css を生成する。
+  クラス名は index.html から自動で検出される（tailwind.config.js の content）。
+  ※クラス名を文字列の連結（`bg-${color}-500` など）で作ると検出されないので、必ず完全な形で書くこと。
+*/
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  /* 外部フォント（Google Fonts）は読み込まず、端末に入っている日本語フォントを使う */
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+  background-color: #f5f3f7; /* 淡い紫がかったグレー */
+}
+/* iOS等のスマホブラウザではみ出す現象を防ぐための強力な強制スタイル */
+input[type="text"], input[type="date"], textarea {
+  box-sizing: border-box !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  min-width: 0 !important; /* ブラウザの強制最小幅を無効化 */
+}
+/* iOS Safari の Date Input 特有のはみ出し対策 */
+input[type="date"] {
+  -webkit-appearance: none !important; /* iOS標準のUI装飾をリセット */
+  appearance: none !important;
+  background-color: #ffffff; /* iOSで背景が透明になるのを防ぐ */
+  /* カレンダーアイコンを右端に綺麗に収めるための調整 */
+  position: relative;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+/* iPhone（Safari）は文字サイズ16px未満の入力欄をタップすると自動で拡大するため、スマホ幅では16pxにする */
+@media (max-width: 767px) {
+  input, select, textarea { font-size: 16px !important; }
+}
+
+/* 印刷（PDF書き出し）用の専用スタイル */
+@media print {
+  @page {
+    size: A4 portrait; /* A4 縦向き */
+    margin: 15mm 20mm; /* 余白の設定 */
+  }
+  body {
+    background-color: #ffffff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
