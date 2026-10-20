@@ -24,173 +24,172 @@
     <!-- スタイル（Tailwind CSS）。src/tailwind.css から npm run build:css で assets/app.css を生成する -->
     <link rel="stylesheet" href="assets/app.css">
 </head>
-<body class="p-4 md:p-8 flex flex-col items-center justify-center min-h-screen print:p-0 print:block print:bg-white">
-    <div class="w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden mb-6 print:max-w-none print:shadow-none print:rounded-none print:mb-0 print:border-none">
+<body class="min-h-screen px-4 pt-4 pb-6 md:pt-10 flex flex-col items-center text-gray-800 print:p-0 print:block print:bg-white">
+    <main class="w-full max-w-lg print:max-w-none">
         <!-- ヘッダー (印刷時は非表示) -->
-        <div class="bg-purple-800 text-white p-6 print:hidden">
-            <h1 class="text-2xl font-bold text-center flex items-center justify-center gap-2">
-                弔いカレンダー
-                <span class="text-xs font-mono font-normal bg-purple-900/50 px-2 py-0.5 rounded-full text-purple-200">v1.6.0</span>
-            </h1>
-            <p class="text-center text-sm mt-2 text-purple-200 leading-relaxed">
-                没年月日を入力するだけで、初七日から五十回忌までの法要日程を自動計算し、GoogleカレンダーやAppleカレンダーに登録できます。
+        <header class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-100 to-purple-200 px-6 pt-6 pb-5 mb-4 print:hidden">
+            <div class="absolute -right-10 -top-12 w-40 h-40 rounded-full bg-white/40" aria-hidden="true"></div>
+            <div class="relative flex items-center gap-3">
+                <img src="favicon.svg" alt="" class="w-12 h-12 drop-shadow-md">
+                <h1 class="font-mincho text-[26px] font-semibold tracking-wider whitespace-nowrap text-purple-900">弔いカレンダー</h1>
+            </div>
+            <span class="absolute right-4 top-3 text-[11px] font-mono text-purple-700/70">v1.7.0</span>
+            <p class="relative mt-4 text-[15px] leading-relaxed text-purple-950/80">
+                没年月日を入れるだけで、初七日から五十回忌までの法要の日程を計算します。
             </p>
+            <ul class="relative mt-4 flex flex-wrap gap-1.5 text-xs font-bold text-purple-800">
+                <li class="rounded-full bg-white/75 px-3 py-1">カレンダーに登録</li>
+                <li class="rounded-full bg-white/75 px-3 py-1">印刷・PDF</li>
+                <li class="rounded-full bg-white/75 px-3 py-1">無料・登録不要</li>
+            </ul>
+        </header>
+
+        <!-- 印刷用タイトル (画面表示時は非表示、印刷時のみ表示される) -->
+        <div id="printHeader" class="hidden print:block mb-4 text-center border-b-2 border-gray-800 pb-4">
+            <h1 id="printTitle" class="text-3xl font-bold text-gray-900 mb-2">法要日程表</h1>
+            <p id="printSubtitle" class="text-base text-gray-700 leading-relaxed"></p>
         </div>
 
-        <div class="p-6 md:p-8 print:p-0">
-            <!-- 印刷用タイトル (画面表示時は非表示、印刷時のみ表示される) -->
-            <div id="printHeader" class="hidden print:block mb-8 text-center border-b-2 border-gray-800 pb-4 print:mb-4">
-                <h1 id="printTitle" class="text-3xl font-bold text-gray-900 mb-2">法要日程表</h1>
-                <p id="printSubtitle" class="text-base text-gray-700 leading-relaxed"></p>
-            </div>
-
-            <!-- 注意事項 (印刷時は非表示) -->
-            <div class="bg-amber-50 border-l-4 border-amber-400 p-3 mb-4 rounded-r print:hidden">
-                <p class="text-sm text-amber-800 leading-relaxed">
-                    <strong>【注意事項】</strong><br>
-                    一般的な計算方法に基づいております。お寺や地域によっては日程を調整したり、一部の法要を省略したりする場合があります。詳細な日程は、お世話になっている菩提寺（お葬式をお願いしたお寺）へご相談ください。
-                </p>
-            </div>
-
-            <!-- セキュリティ・プライバシーについて (印刷時は非表示) -->
-            <div class="bg-green-50 border-l-4 border-green-500 p-3 mb-6 rounded-r print:hidden">
-                <p class="text-sm text-green-800 leading-relaxed">
-                    <strong>【セキュリティ・プライバシーについて】</strong><br>
-                    このアプリは、特定のデータベースに接続していません。計算はすべてお客様の端末内で完結するため、入力された故人様の情報をアプリ開発者および運営者が収集・保存することは一切ありません。安心してご利用ください。<br>
-                    ※「Googleカレンダーに追加」を押した場合は、登録のために予定の内容（お名前・戒名・メモ）がGoogleに送られます。
-                </p>
-            </div>
-
-            <!-- フォームエリア (印刷時は非表示) -->
-            <div class="space-y-5 print:hidden">
+        <!-- 入力欄 (印刷時は非表示) -->
+        <section class="rounded-3xl bg-white p-5 mb-3 shadow-[0_10px_30px_rgba(107,33,168,0.08)] print:hidden" aria-label="入力">
+            <div class="space-y-4">
                 <div class="w-full overflow-hidden">
-                    <label for="deceasedName" class="block text-sm font-medium text-gray-700 mb-1">故人のお名前 <span class="text-xs text-gray-500 font-normal">(任意)</span></label>
-                    <input type="text" id="deceasedName" placeholder="例: 山田太郎" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 border outline-none transition" aria-describedby="name-description">
-                    <p id="name-description" class="mt-1 text-sm text-gray-500">入力するとカレンダーの予定名に使用されます。</p>
+                    <label for="deathDate" class="block text-sm font-bold text-gray-600 mb-1.5">没年月日 <span class="text-fuchsia-600">*</span></label>
+                    <!-- iOS Safari対策として appearance-none と text-base(16px: ズーム防止) を指定 -->
+                    <input type="date" id="deathDate" class="block w-full h-[52px] appearance-none text-base rounded-2xl bg-purple-50/70 border-2 border-transparent px-4 outline-none transition focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-100" required>
                 </div>
 
                 <div class="w-full overflow-hidden">
-                    <label for="kaimyo" class="block text-sm font-medium text-gray-700 mb-1">戒名・法名など <span class="text-xs text-gray-500 font-normal">(任意)</span></label>
-                    <input type="text" id="kaimyo" placeholder="例: 〇〇院釋〇〇" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 border outline-none transition" aria-describedby="kaimyo-description">
-                    <p id="kaimyo-description" class="mt-1 text-sm text-gray-500">カレンダーのメモ欄に記録されます。</p>
+                    <label for="deceasedName" class="block text-sm font-bold text-gray-600 mb-1.5">故人のお名前 <span class="font-normal text-gray-500">（任意）</span></label>
+                    <input type="text" id="deceasedName" placeholder="例: 山田太郎" class="block w-full h-[52px] text-base rounded-2xl bg-purple-50/70 border-2 border-transparent px-4 outline-none transition placeholder:text-gray-400 focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-100" aria-describedby="name-description">
+                    <p id="name-description" class="mt-1 text-xs text-gray-500">カレンダーの予定名に使います。</p>
                 </div>
 
                 <div class="w-full overflow-hidden">
-                    <label for="customNote" class="block text-sm font-medium text-gray-700 mb-1">自由記述メモ <span class="text-xs text-gray-500 font-normal">(任意)</span></label>
-                    <textarea id="customNote" rows="3" placeholder="例: お寺の電話番号、参列者への連絡事項など" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 border outline-none transition resize-y" aria-describedby="note-description"></textarea>
-                    <p id="note-description" class="mt-1 text-sm text-gray-500">入力した内容は、すべての法要カレンダーのメモ欄に一括で追加されます。</p>
+                    <label for="kaimyo" class="block text-sm font-bold text-gray-600 mb-1.5">戒名・法名など <span class="font-normal text-gray-500">（任意）</span></label>
+                    <input type="text" id="kaimyo" placeholder="例: 〇〇院釋〇〇" class="block w-full h-[52px] text-base rounded-2xl bg-purple-50/70 border-2 border-transparent px-4 outline-none transition placeholder:text-gray-400 focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-100" aria-describedby="kaimyo-description">
+                    <p id="kaimyo-description" class="mt-1 text-xs text-gray-500">カレンダーのメモ欄と、印刷した日程表に入ります。</p>
                 </div>
 
                 <div class="w-full overflow-hidden">
-                    <label for="deathDate" class="block text-sm font-medium text-gray-700 mb-1">没年月日 <span class="text-red-500">*</span></label>
-                    <!-- iOS Safari対策として appearance-none と text-base(16px: ズーム防止) を追加 -->
-                    <input type="date" id="deathDate" class="block w-full appearance-none text-base rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 border outline-none transition" required>
+                    <label for="customNote" class="block text-sm font-bold text-gray-600 mb-1.5">メモ <span class="font-normal text-gray-500">（任意）</span></label>
+                    <textarea id="customNote" rows="3" placeholder="例: お寺の電話番号、参列者への連絡事項など" class="block w-full text-base rounded-2xl bg-purple-50/70 border-2 border-transparent px-4 py-3 outline-none transition resize-y placeholder:text-gray-400 focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-100" aria-describedby="note-description"></textarea>
+                    <p id="note-description" class="mt-1 text-xs text-gray-500">すべての予定のメモ欄に入ります。</p>
                 </div>
 
-                <button type="button" id="calculateButton" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-200 shadow-md">
-                    法要日程を計算する
+                <button type="button" id="calculateButton" class="w-full h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-700 text-white text-[17px] font-bold tracking-wide shadow-[0_10px_22px_rgba(126,34,206,0.3)] transition hover:from-purple-600 hover:to-purple-800 active:scale-[0.99] focus:outline-none focus:ring-4 focus:ring-purple-200">
+                    法要の日程を計算する
                 </button>
             </div>
+        </section>
 
-            <!-- 計算結果エリア -->
-            <div id="resultArea" class="mt-8 hidden opacity-0 transition-opacity duration-500 print:mt-0 print:opacity-100 print:block">
-                <div class="border-t border-gray-200 pt-6 print:border-none print:pt-0">
-                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center print:hidden">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-purple-600" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
-                        </svg>
-                        計算結果
-                    </h2>
+        <!-- ご利用にあたって (印刷時は非表示) -->
+        <div class="grid grid-cols-2 gap-2 mb-2 print:hidden">
+            <p class="flex gap-1.5 rounded-2xl bg-white/80 p-3 text-xs leading-relaxed text-gray-600">
+                <svg class="h-4 w-4 shrink-0 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+                <span>入力した内容は、お使いの端末の外へ送られません</span>
+            </p>
+            <p class="flex gap-1.5 rounded-2xl bg-white/80 p-3 text-xs leading-relaxed text-gray-600">
+                <svg class="h-4 w-4 shrink-0 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>
+                <span>日程はお寺・地域で異なります。菩提寺へご相談ください</span>
+            </p>
+        </div>
+        <details class="group mb-6 rounded-2xl bg-white/60 px-4 py-3 print:hidden">
+            <summary class="flex cursor-pointer items-center gap-1 text-sm font-bold text-purple-800">
+                <svg class="h-3.5 w-3.5 transition group-open:rotate-90" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M7 4l7 6-7 6V4z"/></svg>
+                ご利用にあたって（くわしく）
+            </summary>
+            <div class="mt-2 space-y-2 text-sm leading-relaxed text-gray-600">
+                <p>一般的な計算方法に基づいております。お寺や地域によっては日程を調整したり、一部の法要を省略したりする場合があります。詳細な日程は、お世話になっている菩提寺（お葬式をお願いしたお寺）へご相談ください。</p>
+                <p>このアプリは、特定のデータベースに接続していません。計算はすべてお客様の端末内で完結するため、入力された故人様の情報をアプリ開発者および運営者が収集・保存することは一切ありません。</p>
+                <p>※「Googleカレンダーに追加」を押した場合は、登録のために予定の内容（お名前・戒名・メモ）がGoogleに送られます。</p>
+            </div>
+        </details>
 
-                    <!-- ご案内 (印刷時は非表示) -->
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-5 mb-5 shadow-sm print:hidden">
-                        <h3 class="text-sm font-bold text-blue-900 mb-3 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                            </svg>
-                            カレンダーへの登録手順
-                        </h3>
-
-                        <!-- アプリ内ブラウザ警告 (LINE等で開いている場合のみ表示) -->
-                        <div id="guide-inapp" class="hidden bg-red-50 border border-red-300 p-3.5 rounded-md mb-3">
-                            <p class="text-sm text-red-700 font-bold leading-relaxed">
-                                LINEなどのアプリ内ブラウザで開いています。この状態だとカレンダーへの登録がブロックされることがあります。<br>
-                                画面右上のメニュー（<strong>⋮ / ︙ / 共有アイコン</strong>など）から<strong>「他のアプリで開く」「Safariで開く」「ブラウザで開く」</strong>を選び直してから、もう一度お試しください。
-                            </p>
-                        </div>
-
-                        <!-- iPhone/iPad/Mac (Safari系)用の手順 -->
-                        <div id="guide-ios" class="hidden bg-white p-3.5 rounded-md border border-blue-100 mb-3">
-                            <p class="text-sm text-blue-900 leading-relaxed font-medium">
-                                各予定の<strong>「📅 iPhone/Macカレンダーに追加」</strong>ボタンを押すと、その場で予定の追加画面が開きます。内容を確認して<strong>「すべて追加」</strong>を押せば完了です。
-                            </p>
-                            <p class="text-xs text-blue-700 mt-2 leading-relaxed">
-                                ※画面が開かず「ダウンロード」になった場合は、「ファイル」アプリの「ダウンロード」フォルダから保存されたファイルを開いてください。
-                            </p>
-                        </div>
-
-                        <!-- Google用の手順 -->
-                        <div id="guide-google" class="hidden bg-white p-3.5 rounded-md border border-blue-100">
-                            <p class="text-sm text-blue-900 leading-relaxed font-medium">
-                                各予定の<strong>「Googleカレンダーに追加」</strong>ボタンを押すと、登録画面が開きます。内容を確認してそのまま保存してください。
-                            </p>
-                        </div>
-
-                        <div class="mt-3 pt-3 border-t border-blue-200">
-                            <p class="text-xs text-gray-600 leading-relaxed">
-                                <span class="mr-1">※</span>
-                                <span>うまく反応しない場合は、もう一方のボタンや下部の「一括ダウンロード」もお試しください。</span>
-                            </p>
-                        </div>
+        <!-- 計算結果 -->
+        <section id="resultArea" class="hidden opacity-0 transition-opacity duration-500 print:block print:opacity-100" aria-label="計算結果">
+            <!-- まとめ (印刷時は非表示) -->
+            <div id="summaryCard" class="rounded-3xl bg-white px-5 py-4 mb-3 shadow-[0_10px_30px_rgba(107,33,168,0.08)] print:hidden">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
+                        <p id="summaryName" class="font-mincho text-lg font-semibold tracking-wider text-gray-900 truncate"></p>
+                        <p id="summaryDate" class="text-xs text-gray-500 mt-0.5"></p>
                     </div>
+                    <button type="button" id="printButton" class="shrink-0 inline-flex items-center gap-1 rounded-full bg-purple-100 px-3.5 py-2 text-[13px] font-bold text-purple-800 transition hover:bg-purple-200 focus:outline-none focus:ring-4 focus:ring-purple-200">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                        印刷・PDF
+                    </button>
+                </div>
+                <p id="summaryNext" class="hidden mt-3 rounded-2xl bg-purple-50 px-3.5 py-2.5 text-sm text-purple-900"></p>
+            </div>
 
-                    <!-- リスト出力 -->
-                    <div class="bg-white rounded-lg overflow-hidden border border-gray-200 shadow-sm mb-6 print:shadow-none print:border-none print:mb-2">
-                        <!-- 印刷時は上下に太めの枠線を引いて見やすくする -->
-                        <ul id="resultList" class="divide-y divide-gray-200 print:divide-gray-300 print:border-t-2 print:border-b-2 print:border-gray-800">
-                            <!-- JavaScriptで動的にリストを追加 -->
-                        </ul>
+            <!-- アプリ内ブラウザ警告 (LINE等で開いている場合のみ表示) -->
+            <div id="guide-inapp" class="hidden rounded-2xl bg-rose-50 border border-rose-200 p-3.5 mb-3 print:hidden">
+                <p class="text-sm text-rose-700 font-bold leading-relaxed">
+                    LINEなどのアプリ内ブラウザで開いています。この状態だとカレンダーへの登録がブロックされることがあります。<br>
+                    画面右上のメニュー（<strong>⋮ / ︙ / 共有アイコン</strong>など）から<strong>「他のアプリで開く」「Safariで開く」「ブラウザで開く」</strong>を選び直してから、もう一度お試しください。
+                </p>
+            </div>
+
+            <!-- 登録のしかた (印刷時は非表示) -->
+            <details class="group mb-3 rounded-2xl bg-white/60 px-4 py-3 print:hidden">
+                <summary class="flex cursor-pointer items-center gap-1 text-sm font-bold text-purple-800">
+                    <svg class="h-3.5 w-3.5 transition group-open:rotate-90" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M7 4l7 6-7 6V4z"/></svg>
+                    カレンダーへの登録のしかた
+                </summary>
+                <div class="mt-2 space-y-2 text-sm leading-relaxed text-gray-600">
+                    <!-- iPhone/iPad/Mac (Safari系)用の手順 -->
+                    <div id="guide-ios" class="hidden">
+                        <p>各予定の<strong>「iPhone」</strong>ボタンを押すと、その場で予定の追加画面が開きます。内容を確認して<strong>「すべて追加」</strong>を押せば完了です。</p>
+                        <p class="mt-1 text-xs">※画面が開かず「ダウンロード」になった場合は、「ファイル」アプリの「ダウンロード」フォルダから保存されたファイルを開いてください。</p>
                     </div>
+                    <!-- Google用の手順 -->
+                    <p id="guide-google" class="hidden">各予定の<strong>「Google」</strong>ボタンを押すと、Googleカレンダーの登録画面が開きます。内容を確認してそのまま保存してください。</p>
+                    <p class="text-xs">※うまく反応しない場合は、もう一方のボタンや、いちばん下の「まとめてダウンロード」もお試しください。</p>
+                </div>
+            </details>
 
-                    <!-- 印刷時に表示する補足情報とQRコード -->
-                    <div class="hidden print:flex justify-between items-end mt-2 pt-2">
-                        <div class="text-[11px] text-gray-700 leading-relaxed">
-                            ※地域や菩提寺により日程・内容が異なる場合があります。<br>
-                            出力元: 弔いカレンダー (https://tomurai-cal.onga-mirai-tech.com/)
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <!-- サイトURLのQRコード。URLを変えたら npm run qr で作り直す -->
-                            <img src="qr.svg" alt="QRコード" class="w-14 h-14">
-                            <span class="text-[8px] text-gray-500 mt-1">サイトにアクセス</span>
-                        </div>
-                    </div>
+            <!-- 区分の切り替え (印刷時は非表示) -->
+            <div id="tabs" class="flex rounded-2xl bg-white/70 p-1 mb-3 print:hidden" role="group" aria-label="表示する法要">
+                <button type="button" data-group="chuin" class="flex-1 rounded-xl py-2.5 text-[13.5px] font-bold transition">百箇日まで</button>
+                <button type="button" data-group="nenki" class="flex-1 rounded-xl py-2.5 text-[13.5px] font-bold transition">年回忌</button>
+                <button type="button" data-group="all" class="flex-1 rounded-xl py-2.5 text-[13.5px] font-bold transition">すべて</button>
+            </div>
 
-                    <!-- アクションボタン群 (印刷時は非表示) -->
-                    <div class="print:hidden space-y-3">
-                        <!-- 印刷・PDF保存ボタン -->
-                        <button type="button" id="printButton" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 flex justify-center items-center gap-2 transition duration-200">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                            </svg>
-                            紙に印刷する・PDFで保存
-                        </button>
+            <!-- 画面用の一覧 (印刷時は非表示) -->
+            <ul id="resultList" class="space-y-2.5 mb-6 print:hidden">
+                <!-- JavaScriptで動的にリストを追加 -->
+            </ul>
 
-                        <!-- 従来の一括ダウンロードボタン -->
-                        <button type="button" id="downloadAllButton" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 flex justify-center items-center gap-2 transition duration-200">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                            </svg>
-                            (PC・対応端末用) 全件一括ダウンロード
-                        </button>
-                    </div>
+            <!-- 印刷用の一覧 (印刷時のみ表示)。印刷した日程表は以前と同じ表の形にする -->
+            <ul id="printList" class="hidden print:block divide-y divide-gray-300 border-t-2 border-b-2 border-gray-800 mb-2">
+                <!-- JavaScriptで動的にリストを追加 -->
+            </ul>
+
+            <!-- 印刷時に表示する補足情報とQRコード -->
+            <div class="hidden print:flex justify-between items-end mt-2 pt-2">
+                <div class="text-[11px] text-gray-700 leading-relaxed">
+                    ※地域や菩提寺により日程・内容が異なる場合があります。<br>
+                    出力元: 弔いカレンダー (https://tomurai-cal.onga-mirai-tech.com/)
+                </div>
+                <div class="flex flex-col items-center">
+                    <!-- サイトURLのQRコード。URLを変えたら npm run qr で作り直す -->
+                    <img src="qr.svg" alt="QRコード" class="w-14 h-14">
+                    <span class="text-[8px] text-gray-500 mt-1">サイトにアクセス</span>
                 </div>
             </div>
-        </div>
-    </div>
+
+            <!-- まとめてダウンロード (印刷時は非表示) -->
+            <button type="button" id="downloadAllButton" class="w-full mb-6 inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-purple-200 bg-white/70 px-4 py-3 text-sm font-bold text-purple-800 transition hover:bg-white focus:outline-none focus:ring-4 focus:ring-purple-100 print:hidden">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                全件まとめてダウンロード（パソコン向け）
+            </button>
+        </section>
+    </main>
 
     <!-- フッター (印刷時は非表示) -->
-    <footer class="w-full max-w-lg text-center pb-6 print:hidden">
-        <div class="text-sm text-gray-600 space-y-2">
+    <footer class="w-full max-w-lg text-center pt-2 print:hidden">
+        <div class="text-sm text-gray-500 space-y-1.5">
             <p>お問い合わせ：LINE公式アカウント <a href="https://lin.ee/7a9BWip" target="_blank" rel="noopener noreferrer" class="font-bold text-purple-700 hover:text-purple-900 transition-colors">@860avzup</a></p>
             <p>&copy; 2026 Onga-Mirai-Tech</p>
         </div>
@@ -280,9 +279,31 @@
                     name: def.name,
                     title: `${deceasedName}の${def.name}`,
                     date,
+                    // 画面のタブの区分（七日ごと・百箇日 ／ 年回忌）と、日付の下に出す補足
+                    group: def.type === 'days' ? 'chuin' : 'nenki',
+                    sub: def.type === 'days' ? `${def.value + 1}日目` : `満${def.value}年`,
                     note: shifted ? def.note + LEAP_DAY_NOTE : def.note
                 };
             });
+        }
+
+        // その日の0時（時刻を切り捨てた日付）
+        function startOfDay(date) {
+            return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        }
+
+        // from から to までの日数（夏時間で1日が23・25時間の日があっても丸めて数える）
+        function daysBetween(from, to) {
+            return Math.round((startOfDay(to) - startOfDay(from)) / 86400000);
+        }
+
+        /**
+         * 今日以降でいちばん近い法要の番号。すべて過ぎていれば -1。
+         * today は端末の日付（入力内容と同じく、どこにも送らない）
+         */
+        function findNextIndex(events, today) {
+            const t = startOfDay(today);
+            return events.findIndex(e => startOfDay(e.date) >= t);
         }
 
         function formatDateForICS(date) {
@@ -446,11 +467,37 @@
         // （入力欄から直接読むと、計算後に入力を変えたときに予定名とメモが食い違うため）
         let current = null;
 
+        // 表示中の区分（chuin＝初七日〜百箇日 / nenki＝年回忌 / all＝すべて）
+        let currentGroup = 'all';
+
         // iOS用に発行したblob URL（再計算時に解放するため保持）
         let issuedObjectUrls = [];
 
         const resultArea = document.getElementById('resultArea');
         const inputIds = ['deceasedName', 'kaimyo', 'customNote', 'deathDate'];
+
+        const DATE_LONG = { year: 'numeric', month: 'long', day: 'numeric' };
+        const DATE_WEEK = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' };
+        const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
+
+        // 画面に描く部品の見た目（Tailwind のクラス名。検出されるよう、文字列は省略せずに書く）
+        const CLS = {
+            item: 'flex gap-3.5 rounded-[20px] bg-white p-3.5 shadow-[0_6px_18px_rgba(107,33,168,0.06)] transition',
+            itemNext: 'ring-2 ring-purple-400 shadow-[0_10px_24px_rgba(126,34,206,0.14)]',
+            itemPast: 'opacity-60',
+            cal: 'w-[62px] shrink-0 self-start overflow-hidden rounded-2xl border border-purple-100 bg-purple-50 text-center',
+            calMonth: 'bg-purple-500 py-0.5 text-[11px] font-bold text-white',
+            calDay: 'pt-0.5 text-[26px] font-bold leading-tight text-purple-900',
+            calWeek: 'pb-1.5 text-[11px] text-gray-500',
+            badge: 'rounded-full bg-gradient-to-br from-purple-500 to-purple-700 px-2 py-0.5 text-[11px] font-bold text-white',
+            button: 'inline-flex h-11 items-center justify-center gap-1.5 rounded-xl bg-purple-50 text-[13px] font-bold text-purple-900 transition hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-400',
+            tabOn: 'bg-white text-purple-800 shadow-[0_2px_8px_rgba(107,33,168,0.12)]',
+            tabOff: 'text-gray-500 hover:text-purple-800'
+        };
+
+        const ICON_APPLE = '<svg class="h-4 w-4 text-rose-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>';
+        const ICON_GOOGLE = '<svg class="h-4 w-4 text-blue-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 002 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/></svg>';
+        const ICON_CHEVRON = '<svg class="h-3 w-3 transition group-open:rotate-90" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M7 4l7 6-7 6V4z"/></svg>';
 
         function readInputs() {
             return {
@@ -462,7 +509,8 @@
         }
 
         /**
-         * 日付計算メイン処理。quiet のときは（入力の変更に合わせた再計算なので）エラーを出さない
+         * 日付計算メイン処理。quiet のときは（入力の変更に合わせた再計算なので）エラーを出さず、
+         * 表示中の区分（タブ）もそのままにする
          */
         function calculateDates(quiet) {
             const input = readInputs();
@@ -480,21 +528,41 @@
                 return;
             }
 
+            const events = calculateHoyo(deathDate, input.name);
+            const today = new Date();
+            const nextIndex = findNextIndex(events, today);
+            const firstTime = !current;
+
             current = {
                 name: input.name,
                 kaimyo: input.kaimyo,
                 customNote: input.customNote,
                 deathDate,
-                events: calculateHoyo(deathDate, input.name)
+                events,
+                today,
+                nextIndex
             };
 
-            renderPrintHeader();
-            renderList();
+            // 計算ボタンを押したときは、次の法要がある区分を開く（すべて過ぎていれば「すべて」）
+            if (!quiet || firstTime) {
+                currentGroup = nextIndex >= 0 ? events[nextIndex].group : 'all';
+            }
 
+            renderPrintHeader();
+            renderSummary();
+            renderTabs();
+            renderList();
+            renderPrintList();
+
+            const wasHidden = resultArea.classList.contains('hidden');
             resultArea.classList.remove('hidden');
             setTimeout(() => {
                 resultArea.classList.remove('opacity-0');
             }, 50);
+            // 計算ボタンを押したら、結果のところまで動かす（スマホでは入力欄の下に隠れて気づきにくいため）
+            if (!quiet && wasHidden) {
+                document.getElementById('summaryCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         }
 
         function hideResult() {
@@ -509,11 +577,42 @@
 
             const subtitle = document.getElementById('printSubtitle');
             subtitle.textContent = '';
-            const deathDateStr = current.deathDate.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+            const deathDateStr = current.deathDate.toLocaleDateString('ja-JP', DATE_LONG);
             subtitle.append(`没年月日: ${deathDateStr}`);
             if (current.kaimyo) {
                 subtitle.append(document.createElement('br'), `戒名・法名: ${current.kaimyo}`);
             }
+        }
+
+        // 結果のいちばん上のまとめ（お名前・没年月日・次の法要）
+        function renderSummary() {
+            document.getElementById('summaryName').textContent = current.name ? `${current.name} 様` : '法要の日程';
+            document.getElementById('summaryDate').textContent =
+                `${current.deathDate.toLocaleDateString('ja-JP', DATE_LONG)} ご逝去`;
+
+            const next = document.getElementById('summaryNext');
+            next.textContent = '';
+            if (current.nextIndex < 0) {
+                next.classList.add('hidden');
+                return;
+            }
+            const event = current.events[current.nextIndex];
+            const days = daysBetween(current.today, event.date);
+            const strong = document.createElement('strong');
+            strong.textContent = event.name;
+            next.append(
+                '次の法要は ', strong, days === 0 ? '（今日）' : `（あと${days}日）`,
+                el('span', 'block text-xs text-purple-800/80 mt-0.5', event.date.toLocaleDateString('ja-JP', DATE_WEEK))
+            );
+            next.classList.remove('hidden');
+        }
+
+        function renderTabs() {
+            document.querySelectorAll('#tabs button').forEach(btn => {
+                const on = btn.dataset.group === currentGroup;
+                btn.className = `flex-1 rounded-xl py-2.5 text-[13.5px] font-bold transition ${on ? CLS.tabOn : CLS.tabOff}`;
+                btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+            });
         }
 
         function saveBlob(filename, text) {
@@ -547,14 +646,19 @@
             saveBlob(`${event.title}.ics`, buildICS([event], current, new Date()));
         }
 
+        function el(tag, className, text) {
+            const node = document.createElement(tag);
+            if (className) node.className = className;
+            if (text !== undefined) node.textContent = text;
+            return node;
+        }
+
         /**
-         * 計算結果をリストに描画する
+         * 計算結果（画面用）を描画する。表示中の区分の法要だけを出す
          */
         function renderList() {
             const ul = document.getElementById('resultList');
             ul.innerHTML = '';
-
-            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' };
 
             const { isIOS, isInAppBrowser } = detectEnv(navigator.userAgent, navigator.maxTouchPoints || 0);
 
@@ -568,49 +672,54 @@
             document.getElementById('guide-google').classList.remove('hidden');
 
             current.events.forEach((event, index) => {
-                const li = document.createElement('li');
-                li.className = 'p-4 hover:bg-purple-50 transition duration-150 flex flex-col print:py-1.5 print:px-2 print:break-inside-avoid';
+                if (currentGroup !== 'all' && event.group !== currentGroup) return;
 
-                const topDiv = document.createElement('div');
-                topDiv.className = 'flex flex-col sm:flex-row sm:items-start print:flex-row print:items-center';
+                const isNext = index === current.nextIndex;
+                const isPast = current.nextIndex < 0 || index < current.nextIndex;
 
-                const nameDiv = document.createElement('div');
-                nameDiv.className = 'font-bold text-gray-800 sm:w-1/3 mb-1 sm:mb-0 shrink-0 print:w-1/4 print:text-[13px] print:mb-0';
-                nameDiv.textContent = event.name;
+                const li = el('li', `${CLS.item} ${isNext ? CLS.itemNext : ''} ${isPast ? CLS.itemPast : ''}`);
 
-                const contentDiv = document.createElement('div');
-                contentDiv.className = 'sm:w-2/3 print:w-3/4 print:flex print:items-center print:justify-between print:gap-2';
+                // 日めくりのような日付
+                const cal = el('div', CLS.cal);
+                cal.setAttribute('aria-hidden', 'true');
+                cal.append(
+                    el('div', CLS.calMonth, `${event.date.getMonth() + 1}月`),
+                    el('div', CLS.calDay, String(event.date.getDate())),
+                    el('div', CLS.calWeek, WEEKDAYS[event.date.getDay()])
+                );
 
-                const dateDiv = document.createElement('div');
-                dateDiv.className = 'font-medium text-purple-700 mb-1 print:text-black print:text-[13px] print:font-bold print:mb-0 print:w-1/3 print:shrink-0';
-                dateDiv.textContent = event.date.toLocaleDateString('ja-JP', options);
+                const body = el('div', 'min-w-0 flex-1');
 
-                const noteDiv = document.createElement('div');
-                noteDiv.className = 'text-sm text-gray-600 leading-relaxed print:text-gray-600 print:text-[10px] print:leading-tight';
-                noteDiv.textContent = event.note;
+                const title = el('div', 'flex flex-wrap items-center gap-x-1.5 gap-y-1');
+                title.append(el('h3', 'text-base font-bold text-gray-900', event.name));
+                if (isNext) {
+                    const days = daysBetween(current.today, event.date);
+                    title.append(el('span', CLS.badge, days === 0 ? '今日' : `次の法要・あと${days}日`));
+                }
 
-                contentDiv.appendChild(dateDiv);
-                contentDiv.appendChild(noteDiv);
+                // 読み上げ・印刷以外では、年と「◯日目／満◯年」を小さく添える
+                const sub = el('p', 'mt-0.5 text-xs text-gray-500');
+                sub.append(el('span', 'sr-only', event.date.toLocaleDateString('ja-JP', DATE_WEEK) + '。'));
+                sub.append(`${event.date.getFullYear()}年 ・ ${event.sub}`);
 
-                topDiv.appendChild(nameDiv);
-                topDiv.appendChild(contentDiv);
+                // 法要の意味（たたんでおく）
+                const details = el('details', 'group mt-1.5');
+                const summary = el('summary', 'inline-flex cursor-pointer items-center gap-1 text-xs font-bold text-purple-700');
+                summary.innerHTML = ICON_CHEVRON;
+                summary.append('意味を見る');
+                details.append(summary, el('p', 'mt-1.5 text-sm leading-relaxed text-gray-600', event.note));
 
-                const actionDiv = document.createElement('div');
-                actionDiv.className = 'mt-3 sm:ml-auto flex flex-wrap gap-2 pt-2 border-t border-purple-100 sm:border-none sm:pt-0 print:hidden';
-
-                const btnClass = 'inline-flex w-full sm:w-auto justify-center items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500';
+                // 登録ボタン（横並び）
+                const actions = el('div', 'mt-2.5 grid grid-cols-2 gap-1.5');
 
                 const googleBtn = document.createElement('a');
                 googleBtn.href = getGoogleCalendarUrl(event, current);
                 googleBtn.target = '_blank';
                 googleBtn.rel = 'noopener noreferrer';
-                googleBtn.className = btnClass;
-                googleBtn.innerHTML = `
-                    <svg class="mr-1.5 h-4 w-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 002 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/>
-                    </svg>
-                    Googleカレンダーに追加
-                `;
+                googleBtn.className = CLS.button;
+                googleBtn.setAttribute('aria-label', `${event.name}をGoogleカレンダーに追加`);
+                googleBtn.innerHTML = ICON_GOOGLE;
+                googleBtn.append('Google');
 
                 // iOSでは、実体のある<a href="blob:...">を用意し、ユーザーの
                 // タップそのものをリンクの通常ナビゲーションとして扱わせる。
@@ -629,26 +738,38 @@
                     appleBtn.type = 'button';
                     appleBtn.addEventListener('click', () => downloadSingleICS(index));
                 }
-                appleBtn.className = btnClass;
-                appleBtn.innerHTML = `
-                    <svg class="mr-1.5 h-4 w-4 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
-                    </svg>
-                    iPhone/Macカレンダーに追加
-                `;
+                appleBtn.className = CLS.button;
+                appleBtn.setAttribute('aria-label', `${event.name}をiPhone・Macのカレンダーに追加`);
+                appleBtn.innerHTML = ICON_APPLE;
+                appleBtn.append('iPhone');
 
                 // どちらか一方が環境依存でうまく動かない場合に備え、常に両方のボタンを表示する。
                 // 検出結果に応じて、より使われやすい方を先（左）に置く。
                 if (isIOS) {
-                    actionDiv.appendChild(appleBtn);
-                    actionDiv.appendChild(googleBtn);
+                    actions.append(appleBtn, googleBtn);
                 } else {
-                    actionDiv.appendChild(googleBtn);
-                    actionDiv.appendChild(appleBtn);
+                    actions.append(googleBtn, appleBtn);
                 }
 
-                li.appendChild(topDiv);
-                li.appendChild(actionDiv);
+                body.append(title, sub, details, actions);
+                li.append(cal, body);
+                ul.appendChild(li);
+            });
+        }
+
+        /**
+         * 印刷用の一覧（すべての法要を、以前と同じ表の形で）
+         */
+        function renderPrintList() {
+            const ul = document.getElementById('printList');
+            ul.innerHTML = '';
+            current.events.forEach(event => {
+                const li = el('li', 'flex items-center gap-2 py-1.5 px-2 break-inside-avoid');
+                li.append(
+                    el('div', 'w-1/4 shrink-0 text-[13px] font-bold text-gray-900', event.name),
+                    el('div', 'w-1/4 shrink-0 text-[13px] font-bold text-black', event.date.toLocaleDateString('ja-JP', DATE_WEEK)),
+                    el('div', 'flex-1 text-[10px] leading-tight text-gray-600', event.note)
+                );
                 ul.appendChild(li);
             });
         }
@@ -659,9 +780,9 @@
             const { isIOS, isInAppBrowser } = detectEnv(navigator.userAgent, navigator.maxTouchPoints || 0);
 
             if (isInAppBrowser) {
-                alert('【重要】\nLINEなどのアプリ内ブラウザでは、カレンダー一括登録がブロックされる可能性が高いです。\n\nリストの各項目にある「個別登録ボタン」をご利用いただくか、画面右上のメニューから「Safariで開く（ブラウザで開く）」を選択してからお試しください。');
+                alert('【重要】\nLINEなどのアプリ内ブラウザでは、カレンダー一括登録がブロックされる可能性が高いです。\n\nリストの各項目にある「iPhone」「Google」のボタンをご利用いただくか、画面右上のメニューから「Safariで開く（ブラウザで開く）」を選択してからお試しください。');
             } else if (isIOS) {
-                alert('【ご案内】\niPhone/iPadでは、各予定の「iPhone/Macカレンダーに追加」ボタンから1件ずつ登録する方法が確実です。\nこの一括ダウンロードは主にパソコン向けの機能です。');
+                alert('【ご案内】\niPhone/iPadでは、各予定の「iPhone」ボタンから1件ずつ登録する方法が確実です。\nこの一括ダウンロードは主にパソコン向けの機能です。');
             }
 
             const prefix = current.name ? `${current.name}_` : '';
@@ -672,13 +793,22 @@
         document.getElementById('printButton').addEventListener('click', () => window.print());
         document.getElementById('downloadAllButton').addEventListener('click', downloadICS);
 
+        document.querySelectorAll('#tabs button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (!current) return;
+                currentGroup = btn.dataset.group;
+                renderTabs();
+                renderList();
+            });
+        });
+
         // 計算した後に入力を変えたら、その内容で計算し直す
         // （古い結果のまま登録すると、予定名やメモが入力と食い違ってしまうため）
         inputIds.forEach(id => {
-            const el = document.getElementById(id);
+            const input = document.getElementById(id);
             const recalc = () => { if (current) calculateDates(true); };
-            el.addEventListener('input', recalc);
-            el.addEventListener('change', recalc);
+            input.addEventListener('input', recalc);
+            input.addEventListener('change', recalc);
         });
     </script>
 </body>

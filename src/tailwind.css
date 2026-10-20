@@ -11,8 +11,13 @@
 body {
   /* 外部フォント（Google Fonts）は読み込まず、端末に入っている日本語フォントを使う */
   font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", "Meiryo", system-ui, sans-serif;
-  background-color: #f5f3f7; /* 淡い紫がかったグレー */
+  /* 淡い藤色のグラデーション（カード画像 ogp.png と同じ雰囲気） */
+  background: linear-gradient(180deg, #f6f0fc 0%, #fbf9fd 40%, #f4eefa 100%) fixed;
+  background-color: #f8f4fc;
 }
+/* <details> の三角を消す（開閉の印は自前の矢印で表示する） */
+summary { list-style: none; }
+summary::-webkit-details-marker { display: none; }
 /* iOS等のスマホブラウザではみ出す現象を防ぐための強力な強制スタイル */
 input[type="text"], input[type="date"], textarea {
   box-sizing: border-box !important;
@@ -24,7 +29,7 @@ input[type="text"], input[type="date"], textarea {
 input[type="date"] {
   -webkit-appearance: none !important; /* iOS標準のUI装飾をリセット */
   appearance: none !important;
-  background-color: #ffffff; /* iOSで背景が透明になるのを防ぐ */
+  /* 背景色は index.html の bg-* クラスで必ず指定する（iOSで背景が透明になるのを防ぐ） */
   /* カレンダーアイコンを右端に綺麗に収めるための調整 */
   position: relative;
 }
@@ -46,7 +51,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     margin: 15mm 20mm; /* 余白の設定 */
   }
   body {
-    background-color: #ffffff !important;
+    background: #ffffff !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
