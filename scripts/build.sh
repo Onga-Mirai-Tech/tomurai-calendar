@@ -10,8 +10,11 @@ cd "$(dirname "$0")/.."
 # 公開するファイル・ディレクトリ
 PUBLIC_FILES=(
   index.html
-  qr.svg      # 印刷物に入れるサイトのQRコード（npm run qr で作る）
-  assets      # Tailwind CSS をビルドした app.css
+  qr.svg        # 印刷物に入れるサイトのQRコード（npm run qr で作る）
+  favicon.svg   # タブのアイコン（カレンダーと蓮の花）
+  icon-180.png  # ホーム画面に追加したときのアイコン（scripts/brand/generate.sh で作る）
+  ogp.png       # リンクを貼ったときのカード画像（同上）
+  assets        # Tailwind CSS をビルドした app.css
 )
 
 # Tailwind CSS をビルドして assets/app.css を作る（要 npm ci / npm install）
