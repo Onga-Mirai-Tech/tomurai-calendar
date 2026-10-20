@@ -21,8 +21,10 @@
 - 本番と同じ CSP で確かめるときは `.claude/launch.json` の `tomurai-calendar-dist` で開く
 - `HOYO_DEFS` の並び順は予定のUIDに使っている。法要を足すときは末尾に足す（途中に入れると、登録し直したときに二重登録になる）
 - 法要の説明文や計算の決まりは、宗派・地域で違いがある。断定しすぎず、注意事項（菩提寺へ相談）を消さない
-- ドメインは `index.html`・`scripts/make-qr.js`・`server/.htaccess`・`pages-redirect/`・`.github/workflows/`・`scripts/setup-deploy-env.sh`・`docs/` に書かれている。変えるときは `grep -rn tomurai-cal.onga-mirai-tech.com` で漏れなく置き換える
+- ドメインは `index.html`・`scripts/make-qr.js`・`scripts/brand/ogp.html`・`server/.htaccess`・`pages-redirect/`・`.github/workflows/`・`scripts/setup-deploy-env.sh`・`docs/` に書かれている。変えるときは `grep -rn tomurai-cal.onga-mirai-tech.com` で漏れなく置き換える
 
 ## 公開物に含めないもの
 
-`scripts/build.sh` が `dist/` に集めたものだけが公開される: `index.html`・`assets/`・`qr.svg` と `server/.htaccess`。公開ファイルを足したら `scripts/build.sh` にも追記する。
+`scripts/build.sh` が `dist/` に集めたものだけが公開される: `index.html`・`assets/`・`qr.svg`・`favicon.svg`・`icon-180.png`・`ogp.png` と `server/.htaccess`。公開ファイルを足したら `scripts/build.sh` にも追記する。
+
+- アイコン・カード画像の絵は `favicon.svg` が元。変えたら `bash scripts/brand/generate.sh`（Google Chrome と macOS の sips を使う）で `icon-180.png` と `ogp.png` を作り直す
