@@ -4,49 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>弔いカレンダー</title>
-    <!-- Tailwind CSS (CDN経由で読み込み) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
-        body {
-            font-family: 'Noto Sans JP', sans-serif;
-            background-color: #f5f3f7; /* 淡い紫がかったグレー */
-        }
-        /* iOS等のスマホブラウザではみ出す現象を防ぐための強力な強制スタイル */
-        input[type="text"], input[type="date"], textarea {
-            box-sizing: border-box !important;
-            max-width: 100% !important;
-            width: 100% !important;
-            min-width: 0 !important; /* ブラウザの強制最小幅を無効化 */
-        }
-        /* iOS Safari の Date Input 特有のはみ出し対策 */
-        input[type="date"] {
-            -webkit-appearance: none !important; /* iOS標準のUI装飾をリセット */
-            appearance: none !important;
-            background-color: #ffffff; /* iOSで背景が透明になるのを防ぐ */
-            /* カレンダーアイコンを右端に綺麗に収めるための調整 */
-            position: relative;
-        }
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-        
-        /* 印刷（PDF書き出し）用の専用スタイル */
-        @media print {
-            @page {
-                size: A4 portrait; /* A4 縦向き */
-                margin: 15mm 20mm; /* 余白の設定 */
-            }
-            body {
-                background-color: #ffffff !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-        }
-    </style>
+    <meta name="description" content="没年月日を入力するだけで、初七日から五十回忌までの法要日程を自動計算し、GoogleカレンダーやAppleカレンダーに登録できます。">
+    <link rel="canonical" href="https://tomurai-cal.onga-mirai-tech.com/">
+    <!-- スタイル（Tailwind CSS）。src/tailwind.css から npm run build:css で assets/app.css を生成する -->
+    <link rel="stylesheet" href="assets/app.css">
 </head>
 <body class="p-4 md:p-8 flex flex-col items-center justify-center min-h-screen print:p-0 print:block print:bg-white">
     <div class="w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden mb-6 print:max-w-none print:shadow-none print:rounded-none print:mb-0 print:border-none">
@@ -54,13 +15,13 @@
         <div class="bg-purple-800 text-white p-6 print:hidden">
             <h1 class="text-2xl font-bold text-center flex items-center justify-center gap-2">
                 弔いカレンダー
-                <span class="text-xs font-mono font-normal bg-purple-900/50 px-2 py-0.5 rounded-full text-purple-200">v1.5.0</span>
+                <span class="text-xs font-mono font-normal bg-purple-900/50 px-2 py-0.5 rounded-full text-purple-200">v1.6.0</span>
             </h1>
             <p class="text-center text-sm mt-2 text-purple-200 leading-relaxed">
                 没年月日を入力するだけで、初七日から五十回忌までの法要日程を自動計算し、GoogleカレンダーやAppleカレンダーに登録できます。
             </p>
         </div>
-        
+
         <div class="p-6 md:p-8 print:p-0">
             <!-- 印刷用タイトル (画面表示時は非表示、印刷時のみ表示される) -->
             <div id="printHeader" class="hidden print:block mb-8 text-center border-b-2 border-gray-800 pb-4 print:mb-4">
@@ -70,7 +31,7 @@
 
             <!-- 注意事項 (印刷時は非表示) -->
             <div class="bg-amber-50 border-l-4 border-amber-400 p-3 mb-4 rounded-r print:hidden">
-                <p class="text-xs text-amber-800 leading-relaxed">
+                <p class="text-sm text-amber-800 leading-relaxed">
                     <strong>【注意事項】</strong><br>
                     一般的な計算方法に基づいております。お寺や地域によっては日程を調整したり、一部の法要を省略したりする場合があります。詳細な日程は、お世話になっている菩提寺（お葬式をお願いしたお寺）へご相談ください。
                 </p>
@@ -78,9 +39,10 @@
 
             <!-- セキュリティ・プライバシーについて (印刷時は非表示) -->
             <div class="bg-green-50 border-l-4 border-green-500 p-3 mb-6 rounded-r print:hidden">
-                <p class="text-xs text-green-800 leading-relaxed">
+                <p class="text-sm text-green-800 leading-relaxed">
                     <strong>【セキュリティ・プライバシーについて】</strong><br>
-                    このアプリは、特定のデータベースに接続していません。計算はすべてお客様の端末内で完結するため、入力された故人様の情報をアプリ開発者および運営者が収集・保存することは一切ありません。安心してご利用ください。
+                    このアプリは、特定のデータベースに接続していません。計算はすべてお客様の端末内で完結するため、入力された故人様の情報をアプリ開発者および運営者が収集・保存することは一切ありません。安心してご利用ください。<br>
+                    ※「Googleカレンダーに追加」を押した場合は、登録のために予定の内容（お名前・戒名・メモ）がGoogleに送られます。
                 </p>
             </div>
 
@@ -89,28 +51,28 @@
                 <div class="w-full overflow-hidden">
                     <label for="deceasedName" class="block text-sm font-medium text-gray-700 mb-1">故人のお名前 <span class="text-xs text-gray-500 font-normal">(任意)</span></label>
                     <input type="text" id="deceasedName" placeholder="例: 山田太郎" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 border outline-none transition" aria-describedby="name-description">
-                    <p id="name-description" class="mt-1 text-xs text-gray-500">入力するとカレンダーの予定名に使用されます。</p>
+                    <p id="name-description" class="mt-1 text-sm text-gray-500">入力するとカレンダーの予定名に使用されます。</p>
                 </div>
-                
+
                 <div class="w-full overflow-hidden">
                     <label for="kaimyo" class="block text-sm font-medium text-gray-700 mb-1">戒名・法名など <span class="text-xs text-gray-500 font-normal">(任意)</span></label>
                     <input type="text" id="kaimyo" placeholder="例: 〇〇院釋〇〇" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 border outline-none transition" aria-describedby="kaimyo-description">
-                    <p id="kaimyo-description" class="mt-1 text-xs text-gray-500">カレンダーのメモ欄に記録されます。</p>
+                    <p id="kaimyo-description" class="mt-1 text-sm text-gray-500">カレンダーのメモ欄に記録されます。</p>
                 </div>
 
                 <div class="w-full overflow-hidden">
                     <label for="customNote" class="block text-sm font-medium text-gray-700 mb-1">自由記述メモ <span class="text-xs text-gray-500 font-normal">(任意)</span></label>
                     <textarea id="customNote" rows="3" placeholder="例: お寺の電話番号、参列者への連絡事項など" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 border outline-none transition resize-y" aria-describedby="note-description"></textarea>
-                    <p id="note-description" class="mt-1 text-xs text-gray-500">入力した内容は、すべての法要カレンダーのメモ欄に一括で追加されます。</p>
+                    <p id="note-description" class="mt-1 text-sm text-gray-500">入力した内容は、すべての法要カレンダーのメモ欄に一括で追加されます。</p>
                 </div>
-                
+
                 <div class="w-full overflow-hidden">
                     <label for="deathDate" class="block text-sm font-medium text-gray-700 mb-1">没年月日 <span class="text-red-500">*</span></label>
                     <!-- iOS Safari対策として appearance-none と text-base(16px: ズーム防止) を追加 -->
                     <input type="date" id="deathDate" class="block w-full appearance-none text-base rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 border outline-none transition" required>
                 </div>
-                
-                <button onclick="calculateDates()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-200 shadow-md">
+
+                <button type="button" id="calculateButton" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-200 shadow-md">
                     法要日程を計算する
                 </button>
             </div>
@@ -124,7 +86,7 @@
                         </svg>
                         計算結果
                     </h2>
-                    
+
                     <!-- ご案内 (印刷時は非表示) -->
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-5 mb-5 shadow-sm print:hidden">
                         <h3 class="text-sm font-bold text-blue-900 mb-3 flex items-center">
@@ -136,31 +98,31 @@
 
                         <!-- アプリ内ブラウザ警告 (LINE等で開いている場合のみ表示) -->
                         <div id="guide-inapp" class="hidden bg-red-50 border border-red-300 p-3.5 rounded-md mb-3">
-                            <p class="text-xs text-red-700 font-bold leading-relaxed">
+                            <p class="text-sm text-red-700 font-bold leading-relaxed">
                                 LINEなどのアプリ内ブラウザで開いています。この状態だとカレンダーへの登録がブロックされることがあります。<br>
                                 画面右上のメニュー（<strong>⋮ / ︙ / 共有アイコン</strong>など）から<strong>「他のアプリで開く」「Safariで開く」「ブラウザで開く」</strong>を選び直してから、もう一度お試しください。
                             </p>
                         </div>
 
-                        <!-- iPhone/Mac (Safari系)用の手順 -->
+                        <!-- iPhone/iPad/Mac (Safari系)用の手順 -->
                         <div id="guide-ios" class="hidden bg-white p-3.5 rounded-md border border-blue-100 mb-3">
-                            <p class="text-xs text-blue-900 leading-relaxed font-medium">
+                            <p class="text-sm text-blue-900 leading-relaxed font-medium">
                                 各予定の<strong>「📅 iPhone/Macカレンダーに追加」</strong>ボタンを押すと、その場で予定の追加画面が開きます。内容を確認して<strong>「すべて追加」</strong>を押せば完了です。
                             </p>
-                            <p class="text-[10px] text-blue-700 mt-2 leading-relaxed">
+                            <p class="text-xs text-blue-700 mt-2 leading-relaxed">
                                 ※画面が開かず「ダウンロード」になった場合は、「ファイル」アプリの「ダウンロード」フォルダから保存されたファイルを開いてください。
                             </p>
                         </div>
 
                         <!-- Google用の手順 -->
                         <div id="guide-google" class="hidden bg-white p-3.5 rounded-md border border-blue-100">
-                            <p class="text-xs text-blue-900 leading-relaxed font-medium">
+                            <p class="text-sm text-blue-900 leading-relaxed font-medium">
                                 各予定の<strong>「Googleカレンダーに追加」</strong>ボタンを押すと、登録画面が開きます。内容を確認してそのまま保存してください。
                             </p>
                         </div>
 
                         <div class="mt-3 pt-3 border-t border-blue-200">
-                            <p class="text-[11px] text-gray-500 leading-relaxed">
+                            <p class="text-xs text-gray-600 leading-relaxed">
                                 <span class="mr-1">※</span>
                                 <span>うまく反応しない場合は、もう一方のボタンや下部の「一括ダウンロード」もお試しください。</span>
                             </p>
@@ -174,15 +136,16 @@
                             <!-- JavaScriptで動的にリストを追加 -->
                         </ul>
                     </div>
-                    
+
                     <!-- 印刷時に表示する補足情報とQRコード -->
                     <div class="hidden print:flex justify-between items-end mt-2 pt-2">
                         <div class="text-[11px] text-gray-700 leading-relaxed">
                             ※地域や菩提寺により日程・内容が異なる場合があります。<br>
-                            出力元: 弔いカレンダー (https://onga-mirai-tech.github.io/tomurai-calendar/)
+                            出力元: 弔いカレンダー (https://tomurai-cal.onga-mirai-tech.com/)
                         </div>
                         <div class="flex flex-col items-center">
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=https://onga-mirai-tech.github.io/tomurai-calendar/" alt="QRコード" class="w-14 h-14">
+                            <!-- サイトURLのQRコード。URLを変えたら npm run qr で作り直す -->
+                            <img src="qr.svg" alt="QRコード" class="w-14 h-14">
                             <span class="text-[8px] text-gray-500 mt-1">サイトにアクセス</span>
                         </div>
                     </div>
@@ -190,15 +153,15 @@
                     <!-- アクションボタン群 (印刷時は非表示) -->
                     <div class="print:hidden space-y-3">
                         <!-- 印刷・PDF保存ボタン -->
-                        <button onclick="window.print()" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 flex justify-center items-center gap-2 transition duration-200">
+                        <button type="button" id="printButton" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 flex justify-center items-center gap-2 transition duration-200">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                             </svg>
                             紙に印刷する・PDFで保存
                         </button>
-                        
+
                         <!-- 従来の一括ダウンロードボタン -->
-                        <button onclick="downloadICS()" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 flex justify-center items-center gap-2 transition duration-200">
+                        <button type="button" id="downloadAllButton" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 flex justify-center items-center gap-2 transition duration-200">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                             </svg>
@@ -219,150 +182,145 @@
     </footer>
 
     <script>
-        // 計算結果を保持するグローバル配列
-        let events = [];
+        // ==== LOGIC START ====
+        // ここから LOGIC END までは画面（DOM）に触らない計算だけの関数。
+        // tests/logic.test.js がこの区間を切り出して node でテストする。
 
-        // iOS用に発行したblob URL（再計算時に解放するため保持）
-        let issuedObjectUrls = [];
+        const SITE_URL = 'https://tomurai-cal.onga-mirai-tech.com/';
+
+        // 法要の一覧。並び順は予定のUID（uidFor）に使っているため、途中に足したり入れ替えたりしないこと
+        // （同じ予定を登録し直したときに、上書きではなく二重登録になってしまう）。追加するときは末尾に。
+        const HOYO_DEFS = [
+            { name: '初七日', type: 'days', value: 6, note: '亡くなられてから7日目。初願忌（しょがんき）とも呼ばれます。故人が三途の川に到着し、秦広王（しんこうおう）から生前の殺生に関する裁きを受ける日とされています。近年は葬儀当日に併せて行うことが多いです。' },
+            { name: '二七日', type: 'days', value: 13, note: '亡くなられてから14日目。以芳忌（いほうき）とも呼ばれます。奪衣婆（だつえば）や初江王により、生前の盗みなどについて調べられるとされる日です。' },
+            { name: '三七日', type: 'days', value: 20, note: '亡くなられてから21日目。洒水忌（しゃすいき）とも呼ばれます。宋帝王（そうたいおう）により、生前の不貞（不邪淫）などについて調べられるとされる日です。' },
+            { name: '四七日', type: 'days', value: 27, note: '亡くなられてから28日目。阿経忌（あぎょうき）とも呼ばれます。五官王（ごかんおう）により、生前についた嘘（妄言）などについて調べられるとされる日です。' },
+            { name: '五七日', type: 'days', value: 34, note: '亡くなられてから35日目（三十五日）。小練忌（しょうれんき）とも呼ばれます。閻魔大王（えんまだいおう）によって生前の罪が判断され、六道（生まれ変わる世界）のどこへ行くかが決まる重要な日とされています。' },
+            { name: '六七日', type: 'days', value: 41, note: '亡くなられてから42日目。檀弘忌（だんこうき）とも呼ばれます。変成王（へんじょうおう）により、次に生まれ変わる場所や条件などが具体的に決められるとされる日です。' },
+            { name: '七七日（四十九日）', type: 'days', value: 48, note: '亡くなられてから49日目。満中陰（まんちゅういん）や大練忌（だいれんき）とも呼ばれる忌明けの重要な法要です。泰山王（たいざんおう）による最終的な裁きを受けます。一般的にこのタイミングで納骨をすることが多いです。' },
+            { name: '百箇日', type: 'days', value: 99, note: '亡くなられてから100日目。「卒哭忌（そっこくき）」と呼ばれ、泣き悲しむことをやめる日とされています。' },
+            { name: '一周忌', type: 'years', value: 1, note: '亡くなられてから満1年。喪明けとなります。' },
+            { name: '三回忌', type: 'years', value: 2, note: '亡くなられてから満2年（数え年で3年）。' },
+            { name: '七回忌', type: 'years', value: 6, note: '亡くなられてから満6年。' },
+            { name: '十三回忌', type: 'years', value: 12, note: '亡くなられてから満12年。' },
+            { name: '十七回忌', type: 'years', value: 16, note: '亡くなられてから満16年。' },
+            { name: '二十三回忌', type: 'years', value: 22, note: '亡くなられてから満22年。' },
+            { name: '二十五回忌', type: 'years', value: 24, note: '亡くなられてから満24年。二十三回忌や二十七回忌と合わせて（併修して）、この二十五回忌として法要を行う地域・お寺も多いです。' },
+            { name: '二十七回忌', type: 'years', value: 26, note: '亡くなられてから満26年。' },
+            { name: '三十三回忌', type: 'years', value: 32, note: '亡くなられてから満32年。多くの宗派で「弔い上げ（法要の締めくくり）」とされます。' },
+            { name: '五十回忌', type: 'years', value: 49, note: '亡くなられてから満49年。' }
+        ];
+
+        const LEAP_DAY_NOTE = '（命日が2月29日のため、うるう年でない年は2月28日としています）';
 
         /**
-         * 端末・ブラウザの判定結果をまとめて返す関数
-         * （renderList / downloadSingleICS / downloadICS で共通利用し、
-         *   判定ロジックが各所でバラバラになるのを防ぐ）
+         * <input type="date"> の値（YYYY-MM-DD）を、端末の時刻帯の「その日の0時」として読む。
+         * new Date('YYYY-MM-DD') は世界標準時の0時と解釈されるため、
+         * 日本より時刻が遅れている地域（海外在住の方など）では1日前の日付になってしまう。
+         * 正しくない値・存在しない日付のときは null を返す。
          */
-        function getEnvFlags() {
-            const ua = navigator.userAgent.toLowerCase();
-            const isIOS = /iphone|ipad|ipod/.test(ua);
-            const isMac = /macintosh/.test(ua);
-            // Chrome, Edge, Firefox, Operaなどではない純粋なSafariかどうか
-            const isSafari = /safari/.test(ua) && !/chrome|crios|crmo|edg|opr|fxios/.test(ua);
-            // LINE / Instagram / Facebook等のアプリ内ブラウザ（WebView）かどうか
-            // ※LINE等のUAには"Safari"の文字列も含まれることが多く、isSafari単体では
-            //   見分けられないため、ここで別途判定している
-            const isInAppBrowser = /line|micromessenger|instagram|fban|fbav|twitter|threads/i.test(ua);
-            // Apple端末の純正Safari（アプリ内ブラウザは除く）
-            const isAppleSafari = (isIOS || isMac) && isSafari && !isInAppBrowser;
+        function parseDateInput(value) {
+            const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value || '');
+            if (!m) return null;
+            const y = Number(m[1]), mo = Number(m[2]) - 1, d = Number(m[3]);
+            const date = new Date(2000, 0, 1);
+            date.setFullYear(y, mo, d); // 0〜99年が1900年代に読みかえられないよう setFullYear を使う
+            if (date.getFullYear() !== y || date.getMonth() !== mo || date.getDate() !== d) return null;
+            return date;
+        }
 
-            return { isIOS, isMac, isSafari, isInAppBrowser, isAppleSafari };
+        function addDays(date, days) {
+            const result = new Date(date.getTime());
+            result.setDate(result.getDate() + days);
+            return result;
         }
 
         /**
-         * 日付計算メイン処理
+         * 満n年後の同じ月日。2月29日はうるう年でない年には存在しないため、2月28日にする
+         * （setFullYear のままだと3月1日に繰り越されてしまう）。
          */
-        function calculateDates() {
-            const deathDateInput = document.getElementById('deathDate').value;
-            const deceasedName = document.getElementById('deceasedName').value.trim() || '故人';
-            const kaimyo = document.getElementById('kaimyo').value.trim();
+        function addYears(date, years) {
+            const result = new Date(date.getTime());
+            result.setDate(1);
+            result.setFullYear(date.getFullYear() + years);
+            const lastDay = new Date(result.getFullYear(), result.getMonth() + 1, 0).getDate();
+            result.setDate(Math.min(date.getDate(), lastDay));
+            return result;
+        }
 
-            if (!deathDateInput) {
-                alert('没年月日を入力してください。');
-                return;
-            }
+        function isLeapDay(date) {
+            return date.getMonth() === 1 && date.getDate() === 29;
+        }
 
-            const baseDate = new Date(deathDateInput);
-            if (isNaN(baseDate.getTime())) {
-                alert('没年月日の形式が正しくありません。もう一度選び直してください。');
-                return;
-            }
-            events = []; // 初期化
-
-            const addDays = (date, days) => {
-                const result = new Date(date);
-                result.setDate(result.getDate() + days);
-                return result;
-            };
-
-            const addYears = (date, years) => {
-                const result = new Date(date);
-                result.setFullYear(result.getFullYear() + years);
-                return result;
-            };
-
-            const hoyoDefs = [
-                { name: '初七日', type: 'days', value: 6, note: '亡くなられてから7日目。初願忌（しょがんき）とも呼ばれます。故人が三途の川に到着し、泰広王（しんこうおう）から生前の殺生に関する裁きを受ける日とされています。近年は葬儀当日に併せて行うことが多いです。' },
-                { name: '二七日', type: 'days', value: 13, note: '亡くなられてから14日目。以芳忌（いほうき）とも呼ばれます。奪衣婆（だつえば）や初江王により、生前の盗みなどについて調べられるとされる日です。' },
-                { name: '三七日', type: 'days', value: 20, note: '亡くなられてから21日目。洒水忌（しゃすいき）とも呼ばれます。宋帝王（そうたいおう）により、生前の不貞（不邪淫）などについて調べられるとされる日です。' },
-                { name: '四七日', type: 'days', value: 27, note: '亡くなられてから28日目。阿経忌（あぎょうき）とも呼ばれます。五官王（ごかんおう）により、生前についた嘘（妄言）などについて調べられるとされる日です。' },
-                { name: '五七日', type: 'days', value: 34, note: '亡くなられてから35日目（三十五日）。小練忌（しょうれんき）とも呼ばれます。閻魔大王（えんまだいおう）によって生前の罪が判断され、六道（生まれ変わる世界）のどこへ行くかが決まる重要な日とされています。' },
-                { name: '六七日', type: 'days', value: 41, note: '亡くなられてから42日目。檀弘忌（だんこうき）とも呼ばれます。変成王（へんじょうおう）により、次に生まれ変わる場所や条件などが具体的に決められるとされる日です。' },
-                { name: '七七日（四十九日）', type: 'days', value: 48, note: '亡くなられてから49日目。満中陰（まんちゅういん）や大練忌（だいれんき）とも呼ばれる忌明けの重要な法要です。泰山王（たいざんおう）による最終的な裁きを受けます。一般的にこのタイミングで納骨をすることが多いです。' },
-                { name: '百箇日', type: 'days', value: 99, note: '亡くなられてから100日目。「卒哭忌（そっこくき）」と呼ばれ、泣き悲しむことをやめる日とされています。' },
-                { name: '一周忌', type: 'years', value: 1, note: '亡くなられてから満1年。喪明けとなります。' },
-                { name: '三回忌', type: 'years', value: 2, note: '亡くなられてから満2年（数え年で3年）。' },
-                { name: '七回忌', type: 'years', value: 6, note: '亡くなられてから満6年。' },
-                { name: '十三回忌', type: 'years', value: 12, note: '亡くなられてから満12年。' },
-                { name: '十七回忌', type: 'years', value: 16, note: '亡くなられてから満16年。' },
-                { name: '二十三回忌', type: 'years', value: 22, note: '亡くなられてから満22年。' },
-                { name: '二十五回忌', type: 'years', value: 24, note: '亡くなられてから満24年。二十三回忌や二十七回忌と合わせて（併修して）、この二十五回忌として法要を行う地域・お寺も多いです。' },
-                { name: '二十七回忌', type: 'years', value: 26, note: '亡くなられてから満26年。' },
-                { name: '三十三回忌', type: 'years', value: 32, note: '亡くなられてから満32年。多くの宗派で「弔い上げ（法要の締めくくり）」とされます。' },
-                { name: '五十回忌', type: 'years', value: 49, note: '亡くなられてから満49年。' }
-            ];
-
-            hoyoDefs.forEach(def => {
-                let targetDate;
-                if (def.type === 'days') {
-                    targetDate = addDays(baseDate, def.value);
-                } else if (def.type === 'years') {
-                    targetDate = addYears(baseDate, def.value);
-                }
-
-                events.push({
-                    title: `${deceasedName}の${def.name}`,
-                    date: targetDate,
+        /**
+         * 法要日程を計算する。name は予定名に使う故人のお名前（空なら「故人」）。
+         */
+        function calculateHoyo(deathDate, name) {
+            const deceasedName = name || '故人';
+            return HOYO_DEFS.map((def, index) => {
+                const date = def.type === 'days' ? addDays(deathDate, def.value) : addYears(deathDate, def.value);
+                const shifted = def.type === 'years' && isLeapDay(deathDate) && !isLeapDay(date);
+                return {
+                    index,
                     name: def.name,
-                    note: def.note
-                });
+                    title: `${deceasedName}の${def.name}`,
+                    date,
+                    note: shifted ? def.note + LEAP_DAY_NOTE : def.note
+                };
             });
+        }
 
-            // --- 印刷用ヘッダーの内容を動的に更新 ---
-            const printTitleEl = document.getElementById('printTitle');
-            const printSubtitleEl = document.getElementById('printSubtitle');
-            
-            if (deceasedName !== '故人') {
-                printTitleEl.textContent = `${deceasedName}様 法要日程表`;
-            } else {
-                printTitleEl.textContent = '法要日程表';
-            }
-            
-            const deathDateStr = baseDate.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
-            let subtitleHtml = `没年月日: ${deathDateStr}`;
-            if (kaimyo) {
-                subtitleHtml += `<br>戒名・法名: ${kaimyo}`;
-            }
-            printSubtitleEl.innerHTML = subtitleHtml;
-            // ----------------------------------------
+        function formatDateForICS(date) {
+            const y = String(date.getFullYear()).padStart(4, '0');
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}${m}${d}`;
+        }
 
-            renderList();
-            
-            const resultArea = document.getElementById('resultArea');
-            resultArea.classList.remove('hidden');
-            setTimeout(() => {
-                resultArea.classList.remove('opacity-0');
-            }, 50);
+        function formatDateTimeForICS(date) {
+            const y = date.getUTCFullYear();
+            const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+            const d = String(date.getUTCDate()).padStart(2, '0');
+            const h = String(date.getUTCHours()).padStart(2, '0');
+            const min = String(date.getUTCMinutes()).padStart(2, '0');
+            const s = String(date.getUTCSeconds()).padStart(2, '0');
+            return `${y}${m}${d}T${h}${min}${s}Z`;
+        }
+
+        // 文字列から短いハッシュ値（16進8桁, FNV-1a）を作る。UIDを人ごとに分けるために使う
+        function hashString(text) {
+            let h = 0x811c9dc5;
+            for (let i = 0; i < text.length; i++) {
+                h ^= text.charCodeAt(i);
+                h = Math.imul(h, 0x01000193) >>> 0;
+            }
+            return h.toString(16).padStart(8, '0');
         }
 
         /**
-         * 共通の説明文(メモ)を生成する関数
+         * 予定のUID。カレンダーアプリはUIDが同じ予定を「同じ予定の更新」として扱うため、
+         * 「誰の・いつ亡くなった方の・どの法要か」で一意になるようにする。
+         * 1件ずつの登録と一括登録で同じUIDになるので、両方使っても二重登録にならない。
          */
-        function generateDescriptionText(event) {
-            const kaimyo = document.getElementById('kaimyo').value.trim();
-            const customNote = document.getElementById('customNote').value.trim();
-            
-            let desc = `【${event.name}】\n${event.note}\n`;
-            
-            if (kaimyo) {
-                desc += `\n戒名・法名: ${kaimyo}\n`;
-            }
-            
-            if (customNote) {
-                desc += `\n-- メモ --\n${customNote}\n`;
-            }
+        function uidFor(event, deathDate, name) {
+            const idx = String(event.index).padStart(2, '0');
+            return `tomurai-${formatDateForICS(deathDate)}-${idx}-${hashString(name || '')}@tomurai-cal.onga-mirai-tech.com`;
+        }
 
+        /**
+         * カレンダーのメモ欄に入れる説明文。info は計算した時点の入力内容 { kaimyo, customNote }。
+         */
+        function buildDescription(event, info) {
+            let desc = `【${event.name}】\n${event.note}\n`;
+            if (info.kaimyo) {
+                desc += `\n戒名・法名: ${info.kaimyo}\n`;
+            }
+            if (info.customNote) {
+                desc += `\n-- メモ --\n${info.customNote}\n`;
+            }
             desc += `\n-----------------------\n`;
             desc += `作成: 弔いカレンダー\n`;
-            desc += `https://onga-mirai-tech.github.io/tomurai-calendar/\n`;
-            
+            desc += `${SITE_URL}\n`;
             return desc;
         }
 
@@ -378,89 +336,174 @@
                 .replace(/\\/g, '\\\\')
                 .replace(/;/g, '\\;')
                 .replace(/,/g, '\\,')
-                .replace(/\n/g, '\\n');
+                .replace(/\r\n|\r|\n/g, '\\n');
+        }
+
+        /**
+         * RFC5545 の決まり（1行は75バイトまで。続きは次の行の先頭に空白を1つ置いて書く）に沿って折り返す。
+         * 日本語は1文字3バイトなので、文字の途中で切らないよう1文字ずつ数える。
+         */
+        function foldICSLine(line) {
+            const parts = [];
+            let current = '';
+            let bytes = 0;
+            for (const ch of line) {
+                const cp = ch.codePointAt(0);
+                const size = cp < 0x80 ? 1 : cp < 0x800 ? 2 : cp < 0x10000 ? 3 : 4;
+                const limit = parts.length === 0 ? 75 : 74; // 2行目以降は先頭の空白1バイトぶん短い
+                if (bytes + size > limit) {
+                    parts.push(current);
+                    current = '';
+                    bytes = 0;
+                }
+                current += ch;
+                bytes += size;
+            }
+            parts.push(current);
+            return parts.join('\r\n ');
+        }
+
+        /**
+         * ICSファイルの中身を作る。events が1件なら1件だけのファイルになる。
+         */
+        function buildICS(events, info, now) {
+            const lines = [
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'PRODID:-//TomuraiCalendarApp//JA',
+                'CALSCALE:GREGORIAN',
+                'METHOD:PUBLISH'
+            ];
+            const dtStamp = formatDateTimeForICS(now);
+            events.forEach(event => {
+                lines.push(
+                    'BEGIN:VEVENT',
+                    `UID:${uidFor(event, info.deathDate, info.name)}`,
+                    `DTSTAMP:${dtStamp}`,
+                    `DTSTART;VALUE=DATE:${formatDateForICS(event.date)}`,
+                    `DTEND;VALUE=DATE:${formatDateForICS(addDays(event.date, 1))}`,
+                    `SUMMARY:${escapeICSText(event.title)}`,
+                    `DESCRIPTION:${escapeICSText(buildDescription(event, info))}`,
+                    'TRANSP:TRANSPARENT',
+                    'END:VEVENT'
+                );
+            });
+            lines.push('END:VCALENDAR');
+            return lines.map(foldICSLine).join('\r\n') + '\r\n';
         }
 
         /**
          * Googleカレンダー追加用のURLを生成する関数
          */
-        function getGoogleCalendarUrl(event) {
+        function getGoogleCalendarUrl(event, info) {
             const dtStart = formatDateForICS(event.date);
-            const endDate = new Date(event.date);
-            endDate.setDate(endDate.getDate() + 1);
-            const dtEnd = formatDateForICS(endDate);
-            
-            const desc = generateDescriptionText(event);
-
+            const dtEnd = formatDateForICS(addDays(event.date, 1));
             const url = new URL('https://calendar.google.com/calendar/render');
             url.searchParams.append('action', 'TEMPLATE');
             url.searchParams.append('text', event.title);
             url.searchParams.append('dates', `${dtStart}/${dtEnd}`);
-            url.searchParams.append('details', desc);
+            url.searchParams.append('details', buildDescription(event, info));
             // 終日予定として扱うため、時間は指定しない
-            
             return url.toString();
         }
 
         /**
-         * 1件のイベントだけのICSデータを生成する関数
+         * 端末・ブラウザの判定。
+         * iPadOS 13 以降の Safari は Mac と同じUAを名乗るため、タッチ操作できる「Mac」は iPad とみなす。
          */
-        function generateSingleICSData(event) {
-            const CRLF = "\r\n";
-            let icsContent = "BEGIN:VCALENDAR" + CRLF;
-            icsContent += "VERSION:2.0" + CRLF;
-            icsContent += "PRODID:-//TomuraiCalendarApp//JA" + CRLF;
-            icsContent += "CALSCALE:GREGORIAN" + CRLF;
-            icsContent += "METHOD:PUBLISH" + CRLF; 
-            
-            const now = new Date();
-            const dtStamp = formatDateTimeForICS(now);
-            
-            const dtStart = formatDateForICS(event.date);
-            const endDate = new Date(event.date);
-            endDate.setDate(endDate.getDate() + 1);
-            const dtEnd = formatDateForICS(endDate);
-            
-            icsContent += "BEGIN:VEVENT" + CRLF;
-            icsContent += `UID:tomurai-${dtStart}-single@tomuraiapp` + CRLF;
-            icsContent += `DTSTAMP:${dtStamp}` + CRLF;
-            icsContent += `DTSTART;VALUE=DATE:${dtStart}` + CRLF;
-            icsContent += `DTEND;VALUE=DATE:${dtEnd}` + CRLF;
-            icsContent += `SUMMARY:${escapeICSText(event.title)}` + CRLF;
-            
-            const desc = generateDescriptionText(event);
-            icsContent += `DESCRIPTION:${escapeICSText(desc)}` + CRLF;
-            icsContent += "TRANSP:TRANSPARENT" + CRLF;
-            icsContent += "END:VEVENT" + CRLF;
-            icsContent += "END:VCALENDAR" + CRLF;
-            
-            return icsContent;
+        function detectEnv(userAgent, maxTouchPoints) {
+            const ua = String(userAgent).toLowerCase();
+            const isMac = /macintosh/.test(ua);
+            const isIOS = /iphone|ipad|ipod/.test(ua) || (isMac && maxTouchPoints > 1);
+            // Chrome, Edge, Firefox, Operaなどではない純粋なSafariかどうか
+            const isSafari = /safari/.test(ua) && !/chrome|crios|crmo|edg|opr|fxios/.test(ua);
+            // LINE / Instagram / Facebook等のアプリ内ブラウザ（WebView）かどうか
+            // ※LINE等のUAには"Safari"の文字列も含まれることが多く、isSafari単体では
+            //   見分けられないため、ここで別途判定している
+            const isInAppBrowser = /line|micromessenger|instagram|fban|fbav|twitter|threads/.test(ua);
+            return { isIOS, isMac, isSafari, isInAppBrowser };
+        }
+        // ==== LOGIC END ====
+
+        // ---- ここから画面の処理 ----
+
+        // 最後に計算したときの内容。カレンダーに登録する予定名・メモは、すべてここから作る
+        // （入力欄から直接読むと、計算後に入力を変えたときに予定名とメモが食い違うため）
+        let current = null;
+
+        // iOS用に発行したblob URL（再計算時に解放するため保持）
+        let issuedObjectUrls = [];
+
+        const resultArea = document.getElementById('resultArea');
+        const inputIds = ['deceasedName', 'kaimyo', 'customNote', 'deathDate'];
+
+        function readInputs() {
+            return {
+                name: document.getElementById('deceasedName').value.trim(),
+                kaimyo: document.getElementById('kaimyo').value.trim(),
+                customNote: document.getElementById('customNote').value.trim(),
+                deathDateValue: document.getElementById('deathDate').value
+            };
         }
 
         /**
-         * 1件だけICSファイルを端末カレンダーに登録させる関数（PC・Android等向け）
-         *
-         * iPhone/Macでは、この関数は使わず renderList() 内で
-         * 実体のある<a href="blob:...">タグを直接タップさせる方式にしている。
-         * （data:URIへの window.location.href = ... による遷移は、
-         *   フィッシング対策としてWebKitがトップレベルナビゲーションを
-         *   ブロックすることがあり、Safari/Chrome(iOS)いずれでも反応しない
-         *   原因になっていたため廃止）
+         * 日付計算メイン処理。quiet のときは（入力の変更に合わせた再計算なので）エラーを出さない
          */
-        function downloadSingleICS(index) {
-            const event = events[index];
-            if (!event) return;
+        function calculateDates(quiet) {
+            const input = readInputs();
 
-            const icsData = generateSingleICSData(event);
-            const filename = `${event.title}.ics`;
-            const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
-
-            if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-                window.navigator.msSaveOrOpenBlob(blob, filename);
+            if (!input.deathDateValue) {
+                if (quiet) { hideResult(); return; }
+                alert('没年月日を入力してください。');
                 return;
             }
 
-            // PC・Android等：標準的なファイルダウンロード方式
+            const deathDate = parseDateInput(input.deathDateValue);
+            if (!deathDate) {
+                if (quiet) { hideResult(); return; }
+                alert('没年月日の形式が正しくありません。もう一度選び直してください。');
+                return;
+            }
+
+            current = {
+                name: input.name,
+                kaimyo: input.kaimyo,
+                customNote: input.customNote,
+                deathDate,
+                events: calculateHoyo(deathDate, input.name)
+            };
+
+            renderPrintHeader();
+            renderList();
+
+            resultArea.classList.remove('hidden');
+            setTimeout(() => {
+                resultArea.classList.remove('opacity-0');
+            }, 50);
+        }
+
+        function hideResult() {
+            current = null;
+            resultArea.classList.add('hidden', 'opacity-0');
+        }
+
+        // 印刷用ヘッダー。入力内容は必ず textContent で入れる（innerHTML に入れるとHTMLとして動いてしまう）
+        function renderPrintHeader() {
+            document.getElementById('printTitle').textContent =
+                current.name ? `${current.name}様 法要日程表` : '法要日程表';
+
+            const subtitle = document.getElementById('printSubtitle');
+            subtitle.textContent = '';
+            const deathDateStr = current.deathDate.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+            subtitle.append(`没年月日: ${deathDateStr}`);
+            if (current.kaimyo) {
+                subtitle.append(document.createElement('br'), `戒名・法名: ${current.kaimyo}`);
+            }
+        }
+
+        function saveBlob(filename, text) {
+            const blob = new Blob([text], { type: 'text/calendar;charset=utf-8' });
+            // 標準的なファイルダウンロード方式
             // (target="_blank"は新規タブでblob:が読み込めない場合があるため使用しない)
             const link = document.createElement('a');
             const objectUrl = URL.createObjectURL(blob);
@@ -474,6 +517,22 @@
         }
 
         /**
+         * 1件だけICSファイルを端末カレンダーに登録させる関数（PC・Android等向け）
+         *
+         * iPhone/iPadでは、この関数は使わず renderList() 内で
+         * 実体のある<a href="blob:...">タグを直接タップさせる方式にしている。
+         * （data:URIへの window.location.href = ... による遷移は、
+         *   フィッシング対策としてWebKitがトップレベルナビゲーションを
+         *   ブロックすることがあり、Safari/Chrome(iOS)いずれでも反応しない
+         *   原因になっていたため廃止）
+         */
+        function downloadSingleICS(index) {
+            const event = current && current.events[index];
+            if (!event) return;
+            saveBlob(`${event.title}.ics`, buildICS([event], current, new Date()));
+        }
+
+        /**
          * 計算結果をリストに描画する
          */
         function renderList() {
@@ -482,28 +541,24 @@
 
             const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' };
 
-            // ブラウザ判定ロジック（共通ヘルパーを利用）
-            const { isIOS, isInAppBrowser } = getEnvFlags();
+            const { isIOS, isInAppBrowser } = detectEnv(navigator.userAgent, navigator.maxTouchPoints || 0);
 
             // 前回描画時にiOS用へ発行したblob URLを解放（再計算時のリーク防止）
             issuedObjectUrls.forEach(u => URL.revokeObjectURL(u));
             issuedObjectUrls = [];
 
             // ガイドの表示切替
-            const guideInApp = document.getElementById('guide-inapp');
-            const guideIOS = document.getElementById('guide-ios');
-            const guideGoogle = document.getElementById('guide-google');
-            if (guideInApp) guideInApp.classList.toggle('hidden', !isInAppBrowser);
-            if (guideIOS) guideIOS.classList.toggle('hidden', !isIOS);
-            if (guideGoogle) guideGoogle.classList.remove('hidden');
+            document.getElementById('guide-inapp').classList.toggle('hidden', !isInAppBrowser);
+            document.getElementById('guide-ios').classList.toggle('hidden', !isIOS);
+            document.getElementById('guide-google').classList.remove('hidden');
 
-            events.forEach((event, index) => {
+            current.events.forEach((event, index) => {
                 const li = document.createElement('li');
                 li.className = 'p-4 hover:bg-purple-50 transition duration-150 flex flex-col print:py-1.5 print:px-2 print:break-inside-avoid';
-                
+
                 const topDiv = document.createElement('div');
                 topDiv.className = 'flex flex-col sm:flex-row sm:items-start print:flex-row print:items-center';
-                
+
                 const nameDiv = document.createElement('div');
                 nameDiv.className = 'font-bold text-gray-800 sm:w-1/3 mb-1 sm:mb-0 shrink-0 print:w-1/4 print:text-[13px] print:mb-0';
                 nameDiv.textContent = event.name;
@@ -512,11 +567,11 @@
                 contentDiv.className = 'sm:w-2/3 print:w-3/4 print:flex print:items-center print:justify-between print:gap-2';
 
                 const dateDiv = document.createElement('div');
-                dateDiv.className = 'font-medium text-purple-700 text-sm mb-1 print:text-black print:text-[13px] print:font-bold print:mb-0 print:w-1/3 print:shrink-0';
+                dateDiv.className = 'font-medium text-purple-700 mb-1 print:text-black print:text-[13px] print:font-bold print:mb-0 print:w-1/3 print:shrink-0';
                 dateDiv.textContent = event.date.toLocaleDateString('ja-JP', options);
 
                 const noteDiv = document.createElement('div');
-                noteDiv.className = 'text-xs text-gray-500 leading-relaxed print:text-gray-600 print:text-[10px] print:leading-tight';
+                noteDiv.className = 'text-sm text-gray-600 leading-relaxed print:text-gray-600 print:text-[10px] print:leading-tight';
                 noteDiv.textContent = event.note;
 
                 contentDiv.appendChild(dateDiv);
@@ -524,16 +579,17 @@
 
                 topDiv.appendChild(nameDiv);
                 topDiv.appendChild(contentDiv);
-                
+
                 const actionDiv = document.createElement('div');
                 actionDiv.className = 'mt-3 sm:ml-auto flex flex-wrap gap-2 pt-2 border-t border-purple-100 sm:border-none sm:pt-0 print:hidden';
-                
-                const googleUrl = getGoogleCalendarUrl(event);
+
+                const btnClass = 'inline-flex w-full sm:w-auto justify-center items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500';
+
                 const googleBtn = document.createElement('a');
-                googleBtn.href = googleUrl;
+                googleBtn.href = getGoogleCalendarUrl(event, current);
                 googleBtn.target = '_blank';
                 googleBtn.rel = 'noopener noreferrer';
-                googleBtn.className = 'inline-flex w-full sm:w-auto justify-center items-center px-3 py-2 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500';
+                googleBtn.className = btnClass;
                 googleBtn.innerHTML = `
                     <svg class="mr-1.5 h-4 w-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 002 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/>
@@ -544,18 +600,9 @@
                 // iOSでは、実体のある<a href="blob:...">を用意し、ユーザーの
                 // タップそのものをリンクの通常ナビゲーションとして扱わせる。
                 // （JSでのclick()合成やlocation.href代入は挙動が不安定なため使わない）
-                const appleBtnClass = 'inline-flex w-full sm:w-auto justify-center items-center px-3 py-2 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500';
-                const appleBtnInnerHTML = `
-                    <svg class="mr-1.5 h-4 w-4 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
-                    </svg>
-                    iPhone/Macカレンダーに追加
-                `;
-
                 let appleBtn;
                 if (isIOS) {
-                    const icsData = generateSingleICSData(event);
-                    const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
+                    const blob = new Blob([buildICS([event], current, new Date())], { type: 'text/calendar;charset=utf-8' });
                     const objectUrl = URL.createObjectURL(blob);
                     issuedObjectUrls.push(objectUrl);
 
@@ -565,10 +612,15 @@
                 } else {
                     appleBtn = document.createElement('button');
                     appleBtn.type = 'button';
-                    appleBtn.onclick = () => downloadSingleICS(index);
+                    appleBtn.addEventListener('click', () => downloadSingleICS(index));
                 }
-                appleBtn.className = appleBtnClass;
-                appleBtn.innerHTML = appleBtnInnerHTML;
+                appleBtn.className = btnClass;
+                appleBtn.innerHTML = `
+                    <svg class="mr-1.5 h-4 w-4 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                    </svg>
+                    iPhone/Macカレンダーに追加
+                `;
 
                 // どちらか一方が環境依存でうまく動かない場合に備え、常に両方のボタンを表示する。
                 // 検出結果に応じて、より使われやすい方を先（左）に置く。
@@ -586,64 +638,10 @@
             });
         }
 
-        /**
-         * 全件一括生成 (従来通り)
-         */
-        function generateICS() {
-            const CRLF = "\r\n";
-            let icsContent = "BEGIN:VCALENDAR" + CRLF;
-            icsContent += "VERSION:2.0" + CRLF;
-            icsContent += "PRODID:-//TomuraiCalendarApp//JA" + CRLF;
-            icsContent += "CALSCALE:GREGORIAN" + CRLF;
-            icsContent += "METHOD:PUBLISH" + CRLF; 
-            
-            const now = new Date();
-            const dtStamp = formatDateTimeForICS(now);
-
-            events.forEach((event, index) => {
-                const dtStart = formatDateForICS(event.date);
-                const endDate = new Date(event.date);
-                endDate.setDate(endDate.getDate() + 1);
-                const dtEnd = formatDateForICS(endDate);
-                
-                icsContent += "BEGIN:VEVENT" + CRLF;
-                icsContent += `UID:tomurai-${dtStart}-${index}@tomuraiapp` + CRLF;
-                icsContent += `DTSTAMP:${dtStamp}` + CRLF;
-                icsContent += `DTSTART;VALUE=DATE:${dtStart}` + CRLF;
-                icsContent += `DTEND;VALUE=DATE:${dtEnd}` + CRLF;
-                icsContent += `SUMMARY:${escapeICSText(event.title)}` + CRLF;
-                
-                const desc = generateDescriptionText(event);
-                icsContent += `DESCRIPTION:${escapeICSText(desc)}` + CRLF;
-                icsContent += "TRANSP:TRANSPARENT" + CRLF;
-                icsContent += "END:VEVENT" + CRLF;
-            });
-
-            icsContent += "END:VCALENDAR" + CRLF;
-            return icsContent;
-        }
-
-        function formatDateForICS(date) {
-            const y = date.getFullYear();
-            const m = String(date.getMonth() + 1).padStart(2, '0');
-            const d = String(date.getDate()).padStart(2, '0');
-            return `${y}${m}${d}`;
-        }
-
-        function formatDateTimeForICS(date) {
-            const y = date.getUTCFullYear();
-            const m = String(date.getUTCMonth() + 1).padStart(2, '0');
-            const d = String(date.getUTCDate()).padStart(2, '0');
-            const h = String(date.getUTCHours()).padStart(2, '0');
-            const min = String(date.getUTCMinutes()).padStart(2, '0');
-            const s = String(date.getUTCSeconds()).padStart(2, '0');
-            return `${y}${m}${d}T${h}${min}${s}Z`;
-        }
-
         function downloadICS() {
-            if (events.length === 0) return;
+            if (!current) return;
 
-            const { isIOS, isInAppBrowser } = getEnvFlags();
+            const { isIOS, isInAppBrowser } = detectEnv(navigator.userAgent, navigator.maxTouchPoints || 0);
 
             if (isInAppBrowser) {
                 alert('【重要】\nLINEなどのアプリ内ブラウザでは、カレンダー一括登録がブロックされる可能性が高いです。\n\nリストの各項目にある「個別登録ボタン」をご利用いただくか、画面右上のメニューから「Safariで開く（ブラウザで開く）」を選択してからお試しください。');
@@ -651,29 +649,22 @@
                 alert('【ご案内】\niPhone/iPadでは、各予定の「iPhone/Macカレンダーに追加」ボタンから1件ずつ登録する方法が確実です。\nこの一括ダウンロードは主にパソコン向けの機能です。');
             }
 
-            const icsData = generateICS();
-            const deceasedName = document.getElementById('deceasedName').value.trim();
-            const prefix = deceasedName ? `${deceasedName}_` : '';
-            const filename = `${prefix}法要日程_全件.ics`;
-
-            const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
-            if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-                window.navigator.msSaveOrOpenBlob(blob, filename);
-                return;
-            }
-            
-            // 全てのブラウザで最も確実な標準ダウンロード方式を使用
-            // (target="_blank"は新規タブでblob:が読み込めない場合があるため使用しない)
-            const link = document.createElement('a');
-            const objectUrl = URL.createObjectURL(blob);
-            link.href = objectUrl;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            // 保存ダイアログ操作に時間がかかっても失効しないよう十分な遅延を確保
-            setTimeout(() => URL.revokeObjectURL(objectUrl), 10000);
+            const prefix = current.name ? `${current.name}_` : '';
+            saveBlob(`${prefix}法要日程_全件.ics`, buildICS(current.events, current, new Date()));
         }
+
+        document.getElementById('calculateButton').addEventListener('click', () => calculateDates(false));
+        document.getElementById('printButton').addEventListener('click', () => window.print());
+        document.getElementById('downloadAllButton').addEventListener('click', downloadICS);
+
+        // 計算した後に入力を変えたら、その内容で計算し直す
+        // （古い結果のまま登録すると、予定名やメモが入力と食い違ってしまうため）
+        inputIds.forEach(id => {
+            const el = document.getElementById(id);
+            const recalc = () => { if (current) calculateDates(true); };
+            el.addEventListener('input', recalc);
+            el.addEventListener('change', recalc);
+        });
     </script>
 </body>
 </html>

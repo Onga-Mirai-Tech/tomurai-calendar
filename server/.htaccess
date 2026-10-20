@@ -1,0 +1,60 @@
+# =====================================================================
+# 弔いカレンダー - Xserver（Apache）用設定
+# scripts/build.sh により dist/.htaccess としてドキュメントルートに配置される。
+# ドメインを変更する場合は、下記「正規ホスト名」の2箇所を書き換えること。
+# =====================================================================
+
+# ---------------------------------------------------------------------
+# HTTPS化 + 正規ホスト名への統一
+# Xserverのサブドメインは「メインドメインのpublic_html/<サブドメインのFQDN>/」に
+# 置かれるため、https://onga-mirai-tech.com/<サブドメインのFQDN>/ でも
+# 同じ内容が見えてしまう。正規ホスト名以外からのアクセスはすべて301で寄せる。
+# ---------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} !on [OR]
+  RewriteCond %{HTTP_HOST} !^tomurai-cal\.onga-mirai-tech\.com$ [NC]
+  RewriteRule ^(.*)$ https://tomurai-cal.onga-mirai-tech.com/$1 [R=301,L]
+</IfModule>
+
+# ディレクトリ一覧を表示しない
+Options -Indexes
+
+# ---------------------------------------------------------------------
+# セキュリティヘッダー
+# ---------------------------------------------------------------------
+<IfModule mod_headers.c>
+  # HSTS：はじめは1日。公開後に問題がないことを確かめてから1年（31536000）に延ばす
+  Header always set Strict-Transport-Security "max-age=86400"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "DENY"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+
+  # CSP：
+  #  - script-src : index.html に直接書いた <script> だけを中身のハッシュで許可する。
+  #                 __INLINE_SCRIPT_HASHES__ は scripts/build.sh がビルドのたびに計算して置きかえる（このファイルを直接置かないこと）。
+  #                 'unsafe-inline' は使わない。万一 HTML を差しこまれても、そのスクリプトは動かない
+  #  - style-src  : 自サイトの assets/app.css のみ（Tailwind はビルド済み。CDN・外部フォントは使わない）
+  #  - connect-src 'none'：どこにも通信しない（故人のお名前などをサーバーへ送らない）
+  #  ※ Googleカレンダーへの移動（リンク）や、カレンダー登録用の blob: リンクは CSP の対象外
+  Header always set Content-Security-Policy "default-src 'none'; script-src __INLINE_SCRIPT_HASHES__; style-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+</IfModule>
+
+# ---------------------------------------------------------------------
+# キャッシュ
+# HTML・CSSは毎回サーバーに更新確認させ、修正がすぐ利用者に届くようにする
+# （変更が無ければ 304 が返るだけなので、通信量はほとんど増えない）
+# ---------------------------------------------------------------------
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|css|svg)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
+
+# ---------------------------------------------------------------------
+# 圧縮
+# ---------------------------------------------------------------------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css image/svg+xml
+</IfModule>
